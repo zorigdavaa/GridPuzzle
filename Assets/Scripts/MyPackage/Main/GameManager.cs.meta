@@ -1,0 +1,17 @@
+fileFormatVersion: 2
+guid: 20785f22c3e54b041ae06e7a7817ee82
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - player: {instanceID: 0}
+  - LevelTrigger: {instanceID: 0}
+  - scoreText: {instanceID: 0}
+  - levelText: {instanceID: 0}
+  - groundSpawner: {instanceID: 0}
+  - playAgainCanvas: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
