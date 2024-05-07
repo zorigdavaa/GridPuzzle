@@ -122,8 +122,8 @@ public class Grid : MonoBehaviour
                 {
                     // object created = createGridObject(this, x, y);
                     // bool isChosen = GameController.SidePuzzle ? x == 0 : y == 5;
-                    bool isChosen = x == 0;
-                    bool isHideSlot = x == 1;
+                    bool isChosen = y == 0;
+                    bool isHideSlot = y == gridArray.GetLength(1) - 2;
                     // if (Slots.Count - 1 < index)
                     // {
                     //     Debug.Break();
@@ -177,8 +177,8 @@ public class Grid : MonoBehaviour
             {
                 // object created = createGridObject(this, x, y);
                 // bool isChosen = GameController.SidePuzzle ? x == 0 : y == 5;
-                bool isChosen = x == 0;
-                bool isHideSlot = x == 1;
+                bool isChosen = y == 0;
+                bool isHideSlot = y == gridArray.GetLength(1) - 2;
                 PuzzleSlot slot = Slots[index];
                 GridNode node = slot.gameObject.GetComponent<GridNode>();
                 slot.isChosenSlot = isChosen;
@@ -193,6 +193,8 @@ public class Grid : MonoBehaviour
                     node.gameObject.SetActive(false);
                     node.Blocked = false;
                 }
+                node.X = x;
+                node.Y = y;
                 slot.transform.SetSiblingIndex(index);
                 gridArray[x, y] = node;
                 Slots[index].transform.position = GetWorldPosition(x, y);
@@ -597,7 +599,7 @@ public class Grid : MonoBehaviour
 
     internal GridNode GetHidedSecondGrid()
     {
-        return GetGridObject(1, 3);
+        return GetGridObject(3, 1);
     }
 }
 

@@ -19,7 +19,7 @@ public class PuzzleController : Mb
     public bool isPuzzling = false;
     public LineRenderer line;
     public Bot botPf;
-
+    public Grid grid;
     // Start is called before the first frame update
     void Start()
     {
@@ -114,8 +114,6 @@ public class PuzzleController : Mb
                                 // afterAction = () => Jump();
 
                             }
-                            // List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetBot() == null).ToList();
-                            // List<PuzzleSlot> FreeSlots = Slots.Where(x => x.GetBot() != null && !x.GetComponent<GridNode>().Blocked).ToList();
                             List<PuzzleSlot> FreeSlots = Slots.Where(x => !x.isChosenSlot && x.GetBot() != null && !x.GetComponent<GridNode>().Blocked).ToList();
                             // if ((FreeGoNodes.Count == 1 && A.BusController.ManBusPos.HasFreeThreeSeat()) || FreeSlots.Count < 3)
                             if (FreeGoNodes.Count == 1)
@@ -133,25 +131,10 @@ public class PuzzleController : Mb
 
                 }
 
-                // Refresh();
-                // dragging = true;
             }
 
             CheckAllBotPaths();
         }
-        // else if (IsClick && dragging)
-        // {
-        //     ray = cam.ScreenPointToRay(Input.mousePosition);
-        //     // Vector3 mousePos = Input.mousePosition;
-        //     // mousePos.z = 6;
-        //     // mouseWorldPos = cam.ScreenToWorldPoint(mousePos);
-
-        //     if (draggingObject != null && Physics.Raycast(ray, out hit, 100, roadMask))
-        //     {
-        //         draggingObject.transform.position = hit.point + Vector3.up;
-        //         // lastDragPos = hit.point;
-        //     }
-        // }
     }
 
     GridNode checkCanGoChosenNode;
@@ -185,62 +168,6 @@ public class PuzzleController : Mb
         }
     }
 
-    // public void CheckToRefill()
-    // {
-    //     List<Bot> bots = new();
-    //     foreach (PuzzleSlot slot in Slots)
-    //     {
-    //         if (slot.GetBot() != null)
-    //         {
-    //             bots.Add(slot.GetBot());
-    //         }
-    //     }
-
-    //     //Debug.Log(bots.Count + " => Bot Found");
-
-    //     if (bots.Count < 2)
-    //     {
-    //         // bool isSidePuzzle = GameController.SidePuzzle;
-
-    //         foreach (var item in Slots)
-    //         {
-    //             if (item.GetBot())
-    //             {
-    //                 Destroy(item.GetBot().gameObject);
-    //             }
-
-    //             item.SetBot(null);
-    //             //
-    //             // bool isHideSlot = isSidePuzzle ? (item.GetComponent<GridNode>().X == 1) : (item.GetComponent<GridNode>().Y == 4);
-    //             bool isHideSlot = item.GetComponent<GridNode>().X == 1;
-
-    //             if (isHideSlot)
-    //             {
-    //                 item.gameObject.SetActive(false);
-    //             }
-    //             else if (item.GetBot() == null && !item.isChosenSlot)
-    //             {
-    //                 Quaternion rot;
-    //                 // if (!isSidePuzzle)
-    //                 // {
-    //                 rot = Quaternion.LookRotation(transform.forward);
-    //                 // }
-    //                 // else
-    //                 // {
-    //                 //     rot = Quaternion.LookRotation(-transform.right);
-
-    //                 // }
-
-    //                 Bot bot = Instantiate(botPf, item.transform.position, rot, transform);
-    //                 item.SetBot(bot);
-    //                 bot.SetModelIndex(-1);
-    //                 bot.SetColor(currentBusStop.Grid.slotBotColors[UnityEngine.Random.Range(0, currentBusStop.Grid.slotBotColors.Count)]);
-    //                 bot.rb.Constraints(false, false, false, true, false, true);
-    //                 bot.speed = 5;
-    //             }
-    //         }
-    //     }
-    // }
 
     private KeyValuePair<Color, int> CalcColors(out List<Bot> FrequentColorBots)
     {
@@ -349,8 +276,6 @@ public class PuzzleController : Mb
     public List<Vector3> FindPath(GridNode startPos, GridNode targetPos)
     {
         List<Vector3> path = new List<Vector3>();
-        // Grid grid = currentBusStop.Grid;
-        Grid grid = null;
         // Create lists for open and closed nodes
         List<GridNode> openList = new List<GridNode>();
         HashSet<GridNode> closedSet = new HashSet<GridNode>();
@@ -426,7 +351,6 @@ public class PuzzleController : Mb
 
     private List<Vector3> RetracePath(GridNode startNode, GridNode endNode)
     {
-        Grid grid = null;
         List<Vector3> path = new List<Vector3>();
         GridNode currentNode = endNode;
         path.Add(grid.GetWorldPosition(currentNode.X, currentNode.Y));
@@ -474,7 +398,6 @@ public class PuzzleController : Mb
     internal void StartPuzlle()
     {
         // chosenSlots = stop.ChosenSlots;
-        Grid grid = null;
         List<PuzzleSlot> AllSlots = grid.Slots;
 
         chosenSlots = grid.GetChosenSlots();
