@@ -31,7 +31,7 @@ public class PuzzleSlot : MonoBehaviour
             {
                 Bot.transform.position = transform.position;
             }
-            Bot.GetComponent<BoxCollider>().size = new Vector3(0.6f, 2, 0.6f);
+            // Bot.GetComponent<Collider>().size = new Vector3(0.6f, 2, 0.6f);
         }
         else
         {

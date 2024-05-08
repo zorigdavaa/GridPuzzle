@@ -7,6 +7,7 @@ using JetBrains.Annotations;
 using Random = UnityEngine.Random;
 using System.Linq;
 using UnityUtilities;
+using Unity.VisualScripting;
 
 public class Grid : MonoBehaviour
 {
@@ -107,6 +108,10 @@ public class Grid : MonoBehaviour
     {
 
     }
+    void Start()
+    {
+        Initialize();
+    }
 
     bool initialized = false;
     public void Initialize()
@@ -122,7 +127,7 @@ public class Grid : MonoBehaviour
                 {
                     // object created = createGridObject(this, x, y);
                     // bool isChosen = GameController.SidePuzzle ? x == 0 : y == 5;
-                    bool isChosen = y == 0;
+                    bool isChosen = y == gridArray.GetLength(0) - 1;
                     bool isHideSlot = y == gridArray.GetLength(1) - 2;
                     // if (Slots.Count - 1 < index)
                     // {
@@ -177,7 +182,7 @@ public class Grid : MonoBehaviour
             {
                 // object created = createGridObject(this, x, y);
                 // bool isChosen = GameController.SidePuzzle ? x == 0 : y == 5;
-                bool isChosen = y == 0;
+                bool isChosen = y == gridArray.GetLength(0) - 1;
                 bool isHideSlot = y == gridArray.GetLength(1) - 2;
                 PuzzleSlot slot = Slots[index];
                 GridNode node = slot.gameObject.GetComponent<GridNode>();
@@ -441,6 +446,7 @@ public class Grid : MonoBehaviour
         if (ShuffledSlots == null)
         {
             // ShuffledSlots = A.Shuffle(Slots);
+            ShuffledSlots = Slots;
             ShuffledSlots.Shuffle();
             // ShuffledSlots = ShuffledSlots.Where(x => !x.GetComponent<GridNode>().Blocked).ToList();
             // ShuffledSlots = ShuffledSlots.Where(x => !x.GetComponent<GridNode>().Blocked || x is PuzzleSlotDoor).ToList();
