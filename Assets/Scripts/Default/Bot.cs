@@ -12,9 +12,11 @@ public class Bot : Character
     public List<Vector3> paths = null;
     int currentPathIndex = 0;
     public Color startColor;
+    public bool PickItem;
+    QueueManager queueManager;
     private void Start()
     {
-
+        queueManager = FindObjectOfType<QueueManager>();
     }
     void Update()
     {
@@ -25,7 +27,7 @@ public class Bot : Character
             Vector3 SameY = transform.position;
             SameY.y = currentTarget.y;
             Vector3 dir = (currentTarget - SameY).normalized;
-            if (distance < 0.2f)
+            if (distance < 0.1f)
             {
                 currentPathIndex++;
                 if (currentPathIndex >= paths.Count)
@@ -46,6 +48,14 @@ public class Bot : Character
                 animationController.Walk();
             }
         }
+        else if (PickItem)
+        {
+            foreach (var item in queueManager.Queues)
+            {
+                item.GetFirst();
+            }
+        }
+
     }
 
 

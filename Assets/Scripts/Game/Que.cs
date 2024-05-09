@@ -4,15 +4,21 @@ using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Queue : MonoBehaviour
+public class Que : MonoBehaviour
 {
     public List<GameObject> Q = new List<GameObject>();
     Dictionary<GameObject, Vector3> QPos = new Dictionary<GameObject, Vector3>();
     [SerializeField] List<GameObject> Pfs;
-    int Count = 10;
-    float qOffset = 2;
+    [SerializeField] int Count = 10;
+    // public List<Color> Colors;
+    float qOffset = 1;
     // Start is called before the first frame update
     void Start()
+    {
+        // Init();
+    }
+
+    public void Init()
     {
         for (int i = 0; i < Count; i++)
         {
@@ -32,6 +38,10 @@ public class Queue : MonoBehaviour
             Instantiate();
         }
     }
+    public void SetCount(int count)
+    {
+        Count = count;
+    }
 
     private void Instantiate()
     {
@@ -40,7 +50,7 @@ public class Queue : MonoBehaviour
         Enque(obj);
     }
 
-    private void Enque(GameObject obj)
+    public void Enque(GameObject obj)
     {
         Q.Add(obj);
         if (Q.Count == 1)
@@ -59,7 +69,7 @@ public class Queue : MonoBehaviour
         // insPos = QPos[obj] + (-transform.forward * qOffset);
         // insPos -= transform.forward * qOffset;
     }
-    private GameObject Deque()
+    public GameObject Deque()
     {
         if (Q.Count == 0)
             return null;
@@ -74,6 +84,14 @@ public class Queue : MonoBehaviour
             QPos[Q[i]] += transform.forward * qOffset;
         }
         RePosition();
+        return obj;
+    }
+    public GameObject GetFirst()
+    {
+        if (Q.Count == 0)
+            return null;
+
+        GameObject obj = Q[0];
         return obj;
     }
 
@@ -125,5 +143,4 @@ public class Queue : MonoBehaviour
             // transform.localScale = toScale;
         }
     }
-
 }

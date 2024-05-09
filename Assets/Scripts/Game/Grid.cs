@@ -564,7 +564,7 @@ public class Grid : MonoBehaviour
 
     internal List<PuzzleSlot> GetChosenSlots()
     {
-        return Slots.Where(x => x.isChosenSlot && x.gameObject.activeSelf).ToList();
+        return Slots.Where(x => x.isChosenSlot && x.gameObject.activeSelf).OrderBy(x => x.transform.position.x).ToList();
     }
 
     internal Vector3 GetLandintPos()
