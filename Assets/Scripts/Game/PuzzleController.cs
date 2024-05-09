@@ -28,7 +28,14 @@ public class PuzzleController : Mb
         layermask = LayerMask.GetMask("Bot");
         roadMask = LayerMask.GetMask("Road");
 
+        GameManager.Instance.GamePlay += OnGamePlay;
     }
+
+    private void OnGamePlay(object sender, EventArgs e)
+    {
+        StartPuzlle();
+    }
+
     // bool dragging;
 
     // Update is called once per frame
@@ -398,7 +405,7 @@ public class PuzzleController : Mb
     internal void StartPuzlle()
     {
         // chosenSlots = stop.ChosenSlots;
-        List<PuzzleSlot> AllSlots = grid.Slots;
+        // List<PuzzleSlot> AllSlots = grid.Slots;
 
         chosenSlots = grid.GetChosenSlots();
         Slots = grid.Slots;

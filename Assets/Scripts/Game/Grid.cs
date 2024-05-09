@@ -127,7 +127,7 @@ public class Grid : MonoBehaviour
                 {
                     // object created = createGridObject(this, x, y);
                     // bool isChosen = GameController.SidePuzzle ? x == 0 : y == 5;
-                    bool isChosen = y == gridArray.GetLength(0) - 1;
+                    bool isChosen = y == gridArray.GetLength(1) - 1;
                     bool isHideSlot = y == gridArray.GetLength(1) - 2;
                     // if (Slots.Count - 1 < index)
                     // {
@@ -512,7 +512,8 @@ public class Grid : MonoBehaviour
 
     public Bot InstantiateBot(Color color, PuzzleSlot item, bool isColorHidden = false)
     {
-        Quaternion rot = Quaternion.LookRotation(-transform.right);
+        // Quaternion rot = Quaternion.LookRotation(-transform.right);
+        Quaternion rot = Quaternion.identity;
         Bot bot = Instantiate(botPf, item.transform.position, rot, transform);
         item.SetBot(bot);
         // bot.SetModelIndex(-1);
@@ -531,7 +532,7 @@ public class Grid : MonoBehaviour
         bot.speed = 5;
 
         bot.transform.localScale = Vector3.one * 0.9f;
-        bot.animationController.StopAllAnimation();
+        // bot.animationController.StopAllAnimation();
 
         return bot;
         //A.BusController.gameObject.GetComponent<PuzzleController>().CheckAllBotPaths();
