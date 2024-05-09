@@ -43,7 +43,7 @@ public class PuzzleController : Mb
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            Refresh(5);
+            Refresh();
         }
         if (isPuzzling && IsDown)
         {
@@ -107,30 +107,38 @@ public class PuzzleController : Mb
                     {
                         print(paths.Count + " pathc");
                         selectedObj.currentSlot.SetBot(null);
-                        Action afterAction = null;
+                        Action afterAction = () =>
+                        {
+                            selectedObj.ChosenState = true;
+                            List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetBot() == null && !x.GetComponent<GridNode>().Blocked).ToList();
+                            if (FreeGoNodes.Count == 0)
+                            {
+                                Z.GM.GameOver(this, EventArgs.Empty);
+                            }
+                        };
                         // if (!chosenSlots.Any(x => x.GetBot() == null)) //when Full
                         selectedObj.TurnOnOutline(false);
                         // print("Free Go Nodes are " + FreeGoNodes.Count);
                         if (FreeGoNodes.Count <= 2) //when Last
                         {
-                            var commonColorPair = CalcColors(out List<Bot> FrequentColorBots);
-                            // print("Ijil ongotei humuus " + commonColorPair.Value);
-                            if (commonColorPair.Value > 1) // 2 baiwal ochihdoo 3 bolno
-                            {
-                                // print("Jump Added " + commonColorPair.Value);
-                                // afterAction = () => Jump();
+                            // var commonColorPair = CalcColors(out List<Bot> FrequentColorBots);
+                            // // print("Ijil ongotei humuus " + commonColorPair.Value);
+                            // if (commonColorPair.Value > 1) // 2 baiwal ochihdoo 3 bolno
+                            // {
+                            //     // print("Jump Added " + commonColorPair.Value);
+                            //     // afterAction = () => Jump();
 
-                            }
-                            List<PuzzleSlot> FreeSlots = Slots.Where(x => !x.isChosenSlot && x.GetBot() != null && !x.GetComponent<GridNode>().Blocked).ToList();
+                            // }
+                            // List<PuzzleSlot> FreeSlots = Slots.Where(x => !x.isChosenSlot && x.GetBot() != null && !x.GetComponent<GridNode>().Blocked).ToList();
                             // if ((FreeGoNodes.Count == 1 && A.BusController.ManBusPos.HasFreeThreeSeat()) || FreeSlots.Count < 3)
-                            if (FreeGoNodes.Count == 1)
-                            {
-                                print("Refesh added ");
-                                print("1 condition " + (FreeGoNodes.Count == 1));
-                                print("second - " + (FreeSlots.Count < 3) + " and Count is " + FreeSlots.Count);
-                                afterAction += () => { Refresh(commonColorPair.Value); };
-                                // Refresh(commonColorPair.Value);
-                            }
+                            // if (FreeGoNodes.Count == 1)
+                            // {
+                            //     // print("Refesh added ");
+                            //     // print("1 condition " + (FreeGoNodes.Count == 1));
+                            //     // print("second - " + (FreeSlots.Count < 3) + " and Count is " + FreeSlots.Count);
+                            //     afterAction += () => { Refresh(); };
+                            //     // Refresh(commonColorPair.Value);
+                            // }
                         }
 
                         selectedObj.GotoSlot(goNode, paths, afterAction);
@@ -235,7 +243,7 @@ public class PuzzleController : Mb
     }
 
 
-    public void Refresh(int commonColorCount)
+    public void Refresh()
     {
         List<PuzzleSlot> FreeSlots = Slots.Where(x => x.GetBot() != null && !x.isChosenSlot).ToList();
         List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetBot() == null && !x.GetComponent<GridNode>().Blocked).ToList();

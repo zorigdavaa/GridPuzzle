@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using ZPackage;
 
-public abstract class Character : Mb, IHealth
+public abstract class Character : Mb, IHealth, IColored
 {
     public MovementForgeRun movement;
     public LeaderBoardData data;
@@ -25,6 +25,7 @@ public abstract class Character : Mb, IHealth
     public Inventory inventory;
 
     int IHealth.Health { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
     public Renderer rend;
     [SerializeField] Image healthBar;
 

@@ -6,9 +6,9 @@ using UnityEngine;
 
 public class Que : MonoBehaviour
 {
-    public List<GameObject> Q = new List<GameObject>();
-    Dictionary<GameObject, Vector3> QPos = new Dictionary<GameObject, Vector3>();
-    [SerializeField] List<GameObject> Pfs;
+    public List<QItem> Q = new List<QItem>();
+    Dictionary<QItem, Vector3> QPos = new Dictionary<QItem, Vector3>();
+    [SerializeField] List<QItem> Pfs;
     [SerializeField] int Count = 10;
     // public List<Color> Colors;
     float qOffset = 1;
@@ -45,36 +45,36 @@ public class Que : MonoBehaviour
 
     private void Instantiate()
     {
-        GameObject pf = Pfs[Random.Range(0, Pfs.Count)];
-        GameObject obj = Instantiate(pf, transform.position, Quaternion.identity, transform);
+        QItem pf = Pfs[Random.Range(0, Pfs.Count)];
+        QItem obj = Instantiate(pf, transform.position, Quaternion.identity, transform);
         Enque(obj);
     }
 
-    public void Enque(GameObject obj)
+    public void Enque(QItem obj)
     {
         Q.Add(obj);
         if (Q.Count == 1)
         {
             // If the queue is empty (this is the first object), set its position based on the current position and offset
             // QPos.Add(obj, transform.position + (-transform.forward * qOffset));
-            QPos.Add(obj, transform.position);
+            QPos.Add(obj, transform.position + (-transform.forward * qOffset));
         }
         else
         {
             // If the queue is not empty, set its position based on the position of the last object in the queue
-            GameObject lastObject = Q[Q.Count - 2];
+            QItem lastObject = Q[Q.Count - 2];
             QPos.Add(obj, QPos[lastObject] + (-transform.forward * qOffset));
         }
         obj.transform.position = QPos[obj];
         // insPos = QPos[obj] + (-transform.forward * qOffset);
         // insPos -= transform.forward * qOffset;
     }
-    public GameObject Deque()
+    public QItem Deque()
     {
         if (Q.Count == 0)
             return null;
 
-        GameObject obj = Q[0];
+        QItem obj = Q[0];
         Q.Remove(obj);
         QPos.Remove(obj);
         // insPos += transform.forward * qOffset;
@@ -86,12 +86,12 @@ public class Que : MonoBehaviour
         RePosition();
         return obj;
     }
-    public GameObject GetFirst()
+    public QItem GetFirst()
     {
         if (Q.Count == 0)
             return null;
 
-        GameObject obj = Q[0];
+        QItem obj = Q[0];
         return obj;
     }
 

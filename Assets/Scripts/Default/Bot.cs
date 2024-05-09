@@ -12,21 +12,21 @@ public class Bot : Character
     public List<Vector3> paths = null;
     int currentPathIndex = 0;
     public Color startColor;
-    public bool PickItem;
+    public bool ChosenState;
     QueueManager queueManager;
     private void Start()
     {
         queueManager = FindObjectOfType<QueueManager>();
     }
+    QItem PickItem;
     void Update()
     {
         if (paths != null && paths.Count > 0 && currentPathIndex < paths.Count)
         {
             Vector3 currentTarget = paths[currentPathIndex];
-            float distance = Vector3.Distance(transform.position, currentTarget);
             Vector3 SameY = transform.position;
             SameY.y = currentTarget.y;
-            Vector3 dir = (currentTarget - SameY).normalized;
+            float distance = Vector3.Distance(SameY, currentTarget);
             if (distance < 0.1f)
             {
                 currentPathIndex++;
@@ -38,26 +38,66 @@ public class Bot : Character
                     Stop();
                     animationController.Idle();
                     paths = null;
+                    currentPathIndex = 0;
                     OnPathComplete?.Invoke();
-                    OnPathComplete = null;
+                    // OnPathComplete = null;
+                    print("Path End");
                 }
             }
             else
             {
+
+                Vector3 dir = (currentTarget - SameY).normalized;
                 MoveTo(dir);
                 animationController.Walk();
             }
         }
-        else if (PickItem)
+        else if (ChosenState)
         {
+            print("SSSS");
             foreach (var item in queueManager.Queues)
             {
-                item.GetFirst();
+                if (item.GetFirst()?.GetColor() == GetColor())
+                {
+                    PickItem = item.GetFirst();
+                    paths = new List<Vector3> { item.transform.position };
+                    OnPathComplete = () =>
+                    {
+                        Debug.Log("First Complete");
+                        QItem qItem = item.Deque();
+                        qItem.transform.SetParent(transform);
+                        qItem.transform.position += Vector3.up * 1.5f;
+                        paths = new List<Vector3> { transform.position + Vector3.right * 20 };
+                        currentSlot.SetBot(null);
+                        OnPathComplete = () =>
+                        {
+                            Destroy(gameObject);
+                        };
+                    };
+                    break;
+                }
             }
-        }
 
+        }
     }
 
+    private void MovtoTarget(Vector3 currentTarget, Action NearAction)
+    {
+        // Vector3 currentTarget = paths[currentPathIndex];
+        float distance = Vector3.Distance(transform.position, currentTarget);
+        if (distance < 0.1f)
+        {
+            NearAction();
+        }
+        else
+        {
+            Vector3 SameY = transform.position;
+            SameY.y = currentTarget.y;
+            Vector3 dir = (currentTarget - SameY).normalized;
+            MoveTo(dir);
+            animationController.Walk();
+        }
+    }
 
     public void GotoTarget()
     {
