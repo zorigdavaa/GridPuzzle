@@ -20,6 +20,7 @@ public class PuzzleController : Mb
     public LineRenderer line;
     public Bot botPf;
     public Grid grid;
+    QueueManager queueManager;
     // Start is called before the first frame update
     void Start()
     {
@@ -27,7 +28,7 @@ public class PuzzleController : Mb
         cam = FindObjectOfType<Camera>();
         layermask = LayerMask.GetMask("Bot");
         roadMask = LayerMask.GetMask("Road");
-
+        queueManager = FindObjectOfType<QueueManager>();
         GameManager.Instance.GamePlay += OnGamePlay;
     }
 
@@ -113,7 +114,28 @@ public class PuzzleController : Mb
                             List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetBot() == null && !x.GetComponent<GridNode>().Blocked).ToList();
                             if (FreeGoNodes.Count == 0)
                             {
-                                Z.GM.GameOver(this, EventArgs.Empty);
+                                bool SameColor = false;
+                                List<Color> FirsColorsQ = queueManager.Queues.Select(x => x.GetFirst().GetColor()).ToList();
+                                List<Color> ChSlotColors = chosenSlots.Select(x => x.GetBot().GetColor()).ToList();
+                                foreach (var item in ChSlotColors)
+                                {
+                                    foreach (var QFirstColor in FirsColorsQ)
+                                    {
+                                        if (item == QFirstColor)
+                                        {
+                                            SameColor = true;
+                                            break;
+                                        }
+                                    }
+                                    if (SameColor)
+                                    {
+                                        break;
+                                    }
+                                }
+                                if (!SameColor)
+                                {
+                                    Z.GM.GameOver(this, EventArgs.Empty);
+                                }
                             }
                         };
                         // if (!chosenSlots.Any(x => x.GetBot() == null)) //when Full
