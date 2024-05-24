@@ -4,53 +4,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class Bot : Character
+public class Bot : Character, IGridObj
 {
     public Transform Target;
     [SerializeField] Transform Chest;
-    public PuzzleSlot currentSlot;
-    public List<Vector3> paths = null;
-    int currentPathIndex = 0;
+    public PuzzleSlot currentSlot { get; set; }
+    public List<Vector3> Paths { get; set; }
+    public int CurrentPathIndex { get; set; } = 0;
     public Color startColor;
-    public bool ChosenState;
+    public bool ChosenState { get; set; }
     QueueManager queueManager;
     private void Start()
     {
         queueManager = FindObjectOfType<QueueManager>();
     }
-    QItem PickItem;
+    IQItem PickItem;
+
+    public event EventHandler OnClicked;
+
     void Update()
     {
-        if (paths != null && paths.Count > 0 && currentPathIndex < paths.Count)
+        if (HasPath())
         {
-            Vector3 currentTarget = paths[currentPathIndex];
-            Vector3 SameY = transform.position;
-            SameY.y = currentTarget.y;
-            float distance = Vector3.Distance(SameY, currentTarget);
-            if (distance < 0.1f)
-            {
-                currentPathIndex++;
-                if (currentPathIndex >= paths.Count)
-                {
-                    //A.BusController.GetComponent<PuzzleController>().CheckToRefill();
-                    //Debug.Log("Checked");
-
-                    Stop();
-                    animationController.Idle();
-                    paths = null;
-                    currentPathIndex = 0;
-                    OnPathComplete?.Invoke();
-                    // OnPathComplete = null;
-                    print("Path End");
-                }
-            }
-            else
-            {
-
-                Vector3 dir = (currentTarget - SameY).normalized;
-                MoveTo(dir);
-                animationController.Walk();
-            }
+            FollowPath();
         }
         else if (ChosenState)
         {
@@ -60,14 +36,14 @@ public class Bot : Character
                 if (item.GetFirst()?.GetColor() == GetColor())
                 {
                     PickItem = item.GetFirst();
-                    paths = new List<Vector3> { item.transform.position };
+                    Paths = new List<Vector3> { item.transform.position };
                     OnPathComplete = () =>
                     {
                         Debug.Log("First Complete");
-                        QItem qItem = item.Deque();
+                        IQItem qItem = item.Deque();
                         qItem.transform.SetParent(transform);
                         qItem.transform.position += Vector3.up * 1.5f;
-                        paths = new List<Vector3> { transform.position + Vector3.right * 20 };
+                        Paths = new List<Vector3> { transform.position + Vector3.right * 20 };
                         currentSlot.SetBot(null);
                         OnPathComplete = () =>
                         {
@@ -78,6 +54,43 @@ public class Bot : Character
                 }
             }
 
+        }
+    }
+
+    public bool HasPath()
+    {
+        return Paths != null && Paths.Count > 0 && CurrentPathIndex < Paths.Count;
+    }
+
+    public void FollowPath()
+    {
+        Vector3 currentTarget = Paths[CurrentPathIndex];
+        Vector3 SameY = transform.position;
+        SameY.y = currentTarget.y;
+        float distance = Vector3.Distance(SameY, currentTarget);
+        if (distance < 0.1f)
+        {
+            CurrentPathIndex++;
+            if (CurrentPathIndex >= Paths.Count)
+            {
+                //A.BusController.GetComponent<PuzzleController>().CheckToRefill();
+                //Debug.Log("Checked");
+
+                Stop();
+                animationController.Idle();
+                Paths = null;
+                CurrentPathIndex = 0;
+                OnPathComplete?.Invoke();
+                // OnPathComplete = null;
+                print("Path End");
+            }
+        }
+        else
+        {
+
+            Vector3 dir = (currentTarget - SameY).normalized;
+            MoveTo(dir);
+            animationController.Walk();
         }
     }
 
@@ -98,18 +111,12 @@ public class Bot : Character
             animationController.Walk();
         }
     }
+    public Action OnPathComplete { get; set; }
 
-    public void GotoTarget()
+    public void GotoPath(List<Vector3> paths, Action action)
     {
-        movement.GoToPosition(Target);
-    }
-    public void GotoPos(Vector3 pos)
-    {
-        movement.GoToPosition(pos);
-    }
-    public void GotoPath(List<Vector3> path)
-    {
-        // movement.GotoPath(path);
+        this.Paths = paths;
+        OnPathComplete = action;
     }
 
     public override void Die()
@@ -117,24 +124,20 @@ public class Bot : Character
         base.Die();
         // rb.isKinematic = true;
     }
-    public EventHandler OnBotClicked;
-    internal void Clicked()
-    {
-        OnBotClicked?.Invoke(this, EventArgs.Empty);
-    }
+
     public void TurnOnOutline(bool val)
     {
 
     }
-    Action OnPathComplete;
+
     // internal void GotoSlot(PuzzleSlot goSlot, List<Vector3> paths)
-    internal void GotoSlot(GridNode node, List<Vector3> paths, Action afterAction = null)
+    public void GotoSlot(GridNode node, List<Vector3> paths, Action afterAction = null)
     {
         // transform.position = goSlot.transform.position;
         // print(paths.Count);
-        this.paths = paths;
+
         currentSlot = node.Slot;
-        OnPathComplete = afterAction;
+        GotoPath(paths, afterAction);
         node.GetComponent<PuzzleSlot>().SetBot(this, false);
         // goSlot.SetBot(this);
     }
@@ -143,4 +146,8 @@ public class Bot : Character
         rb.velocity = Vector3.zero;
     }
 
+    public void Clicked(object sender, EventArgs e)
+    {
+        OnClicked?.Invoke(sender, e);
+    }
 }

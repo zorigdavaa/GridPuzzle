@@ -51,12 +51,12 @@ public class PuzzleController : Mb
             ray = cam.ScreenPointToRay(MP);
             // bool isHit = Physics.Raycast(ray, out RaycastHit hit, 20, layermask);
             bool isHit = Physics.Raycast(ray, out RaycastHit hit, 200);
-            Bot selectedObj = null;
+            IGridObj selectedObj = null;
             if (isHit)
             {
-                if (hit.transform.GetComponent<Bot>())
+                if (hit.transform.GetComponent<IGridObj>() != null)
                 {
-                    selectedObj = hit.transform.GetComponent<Bot>();
+                    selectedObj = hit.transform.GetComponent<IGridObj>();
                 }
                 else
                 {
@@ -81,10 +81,10 @@ public class PuzzleController : Mb
             }
 
             print("Down and hit was " + isHit);
-            if (selectedObj && selectedObj.currentSlot?.GridNode)
+            if (selectedObj != null && selectedObj.currentSlot?.GridNode)
             // if (hitObjs.Length > 0 && selectedObj && selectedObj.currentSlot?.GridNode)
             {
-                selectedObj.Clicked();
+                selectedObj.Clicked(this, EventArgs.Empty);
                 GridNode botNode = selectedObj.currentSlot.GridNode;
                 // PuzzleSlot goSlot = chosenSlots.Where(x => x.GetBot() == null).First();
                 List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetBot() == null && !x.GetComponent<GridNode>().Blocked).ToList();
@@ -139,7 +139,7 @@ public class PuzzleController : Mb
                             }
                         };
                         // if (!chosenSlots.Any(x => x.GetBot() == null)) //when Full
-                        selectedObj.TurnOnOutline(false);
+                        // selectedObj.TurnOnOutline(false);
                         // print("Free Go Nodes are " + FreeGoNodes.Count);
                         if (FreeGoNodes.Count <= 2) //when Last
                         {
@@ -185,7 +185,7 @@ public class PuzzleController : Mb
             // {
             foreach (PuzzleSlot slot in Slots)
             {
-                Bot bot = slot.GetBot();
+                IGridObj bot = slot.GetBot();
                 if (bot != null && !bot.currentSlot.isChosenSlot)
                 {
                     GridNode botNode = bot.currentSlot.GridNode;
@@ -206,15 +206,15 @@ public class PuzzleController : Mb
     }
 
 
-    private KeyValuePair<Color, int> CalcColors(out List<Bot> FrequentColorBots)
+    private KeyValuePair<Color, int> CalcColors(out List<IGridObj> FrequentColorBots)
     {
 
         // chosenSlots = currentBusStop.Grid.GetChosenSlots();
         Dictionary<Color, int> ColorFreq = new Dictionary<Color, int>();
         foreach (var item in chosenSlots)
         {
-            Bot bot = item.GetBot();
-            if (bot)
+            IGridObj bot = item.GetBot();
+            if (bot != null)
             {
                 Color color = bot.GetColor();
                 if (ColorFreq.ContainsKey(color))
@@ -244,7 +244,7 @@ public class PuzzleController : Mb
 
         return commonColorPair;
     }
-    private KeyValuePair<Color, int> CalcColors(List<Bot> SeatchBots)
+    private KeyValuePair<Color, int> CalcColors(List<IGridObj> SeatchBots)
     {
         Dictionary<Color, int> ColorFreq = new Dictionary<Color, int>();
         foreach (var item in SeatchBots)
@@ -456,9 +456,9 @@ public class PuzzleController : Mb
         // }
     }
 
-    internal List<Bot> GetClickAbleBots()
+    internal List<IGridObj> GetClickAbleBots()
     {
-        List<Bot> SeatchBots = Slots.Where(x => x.GetBot() != null).Select(x => x.Bot).ToList();
+        List<IGridObj> SeatchBots = Slots.Where(x => x.GetBot() != null).Select(x => x.Bot).ToList();
         var pair = CalcColors(SeatchBots);
         return Slots.Where(x =>
         !x.isChosenSlot &&

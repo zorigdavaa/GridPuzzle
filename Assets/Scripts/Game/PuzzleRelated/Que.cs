@@ -6,9 +6,9 @@ using UnityEngine;
 
 public class Que : MonoBehaviour
 {
-    public List<QItem> Q = new List<QItem>();
-    Dictionary<QItem, Vector3> QPos = new Dictionary<QItem, Vector3>();
-    [SerializeField] List<QItem> Pfs;
+    public List<IQItem> Q = new List<IQItem>();
+    Dictionary<IQItem, Vector3> QPos = new Dictionary<IQItem, Vector3>();
+    [SerializeField] List<GameObject> Pfs;
     [SerializeField] int Count = 10;
     // public List<Color> Colors;
     float qOffset = 1;
@@ -31,7 +31,7 @@ public class Que : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            Destroy(Deque());
+            Destroy(Deque().gameObject);
         }
         else if (Input.GetKeyDown(KeyCode.E))
         {
@@ -45,12 +45,12 @@ public class Que : MonoBehaviour
 
     private void Instantiate()
     {
-        QItem pf = Pfs[Random.Range(0, Pfs.Count)];
-        QItem obj = Instantiate(pf, transform.position, Quaternion.identity, transform);
+        GameObject pf = Pfs[Random.Range(0, Pfs.Count)];
+        IQItem obj = Instantiate(pf, transform.position, Quaternion.identity, transform).GetComponent<IQItem>();
         Enque(obj);
     }
 
-    public void Enque(QItem obj)
+    public void Enque(IQItem obj)
     {
         Q.Add(obj);
         if (Q.Count == 1)
@@ -62,19 +62,19 @@ public class Que : MonoBehaviour
         else
         {
             // If the queue is not empty, set its position based on the position of the last object in the queue
-            QItem lastObject = Q[Q.Count - 2];
+            IQItem lastObject = Q[Q.Count - 2];
             QPos.Add(obj, QPos[lastObject] + (-transform.forward * qOffset));
         }
         obj.transform.position = QPos[obj];
         // insPos = QPos[obj] + (-transform.forward * qOffset);
         // insPos -= transform.forward * qOffset;
     }
-    public QItem Deque()
+    public IQItem Deque()
     {
         if (Q.Count == 0)
             return null;
 
-        QItem obj = Q[0];
+        IQItem obj = Q[0];
         Q.Remove(obj);
         QPos.Remove(obj);
         // insPos += transform.forward * qOffset;
@@ -86,61 +86,51 @@ public class Que : MonoBehaviour
         RePosition();
         return obj;
     }
-    public QItem GetFirst()
+    public IQItem GetFirst()
     {
         if (Q.Count == 0)
             return null;
 
-        QItem obj = Q[0];
+        IQItem obj = Q[0];
         return obj;
     }
+    public Vector3 GetPos(IQItem qItem)
+    {
+        return QPos[qItem];
+    }
 
-    Coroutine corot;
+    // Coroutine corot;
     public void RePosition()
     {
-        if (corot != null)
+        foreach (var item in Q)
         {
-            StopCoroutine(corot);
+            item.GoToQPos(this);
         }
-        if (Q.Any())
-        {
-
-            corot = StartCoroutine(LocalCoroutine2());
-        }
-        // IEnumerator LocalCoroutine()
+        // if (corot != null)
         // {
-        //     while (Vector3.Distance(QPos[Q[0]], Q[0].transform.position) > 0.1f)
+        //     StopCoroutine(corot);
+        // }
+        // if (Q.Any())
+        // {
+
+        //     corot = StartCoroutine(LocalCoroutine2());
+        // }
+        // IEnumerator LocalCoroutine2()
+        // {
+        //     float t;
+        //     float time = 0;
+        //     float duration = 1f;
+
+        //     while (time < duration)
         //     {
+        //         time += Time.deltaTime;
+        //         t = time / duration;
         //         foreach (var item in Q)
         //         {
-        //             item.transform.position += transform.forward * 3 * Time.deltaTime;
+        //             item.transform.position = Vector3.Lerp(item.transform.position, QPos[item], t);
         //         }
-        //         // insPos = Q[Q.Count - 1].transform.position - (transform.forward * qOffset);
         //         yield return null;
         //     }
-        //     corot = null;
         // }
-        IEnumerator LocalCoroutine2()
-        {
-            float t;
-            float time = 0;
-            float duration = 1f;
-            // Vector3 initScale = transform.localScale;  // Replace with your initial scale
-            // Vector3 toScale = new Vector3(2f, 2f, 2f);  // Replace with your target scale
-
-            while (time < duration)
-            {
-                time += Time.deltaTime;
-                t = time / duration;
-                foreach (var item in Q)
-                {
-                    item.transform.position = Vector3.Lerp(item.transform.position, QPos[item], t);
-                }
-                yield return null;
-            }
-
-            // Ensure that the final scale is exactly the target scale
-            // transform.localScale = toScale;
-        }
     }
 }

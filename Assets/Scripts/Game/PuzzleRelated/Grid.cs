@@ -13,7 +13,7 @@ public class Grid : MonoBehaviour
 {
     public List<Color> slotBotColors;
     //public List<Color> testBotColors;
-    [SerializeField] Bot botPf;
+    [SerializeField] GameObject botPf;
     public event EventHandler<OnGridObjectChangedEventArgs> OnGridObjectChanged;
     public class OnGridObjectChangedEventArgs : EventArgs
     {
@@ -469,7 +469,7 @@ public class Grid : MonoBehaviour
         foreach (var item in ShuffledSlots)
         {
             // if (!item.isChosenSlot && item.GetBot())
-            if (item.GetBot())
+            if (item.GetBot() != null)
             {
                 Destroy(item.GetBot().gameObject);
             }
@@ -510,14 +510,14 @@ public class Grid : MonoBehaviour
         //A.BusController.gameObject.GetComponent<PuzzleController>().CheckAllBotPaths();
     }
 
-    public Bot InstantiateBot(Color color, PuzzleSlot item, bool isColorHidden = false)
+    public IGridObj InstantiateBot(Color color, PuzzleSlot item, bool isColorHidden = false)
     {
         // Quaternion rot = Quaternion.LookRotation(-transform.right);
         Quaternion rot = Quaternion.identity;
-        Bot bot = Instantiate(botPf, item.transform.position, rot, transform);
-        item.SetBot(bot);
+        IGridObj obj = Instantiate(botPf, item.transform.position, rot, transform).GetComponent<IGridObj>();
+        item.SetBot(obj);
         // bot.SetModelIndex(-1);
-        bot.startColor = color;
+        // obj.startColor = color;
 
         if (isColorHidden)
         {
@@ -526,15 +526,12 @@ public class Grid : MonoBehaviour
         }
         else
         {
-            bot.SetColor(color);
+            obj.SetColor(color);
         }
-        // bot.rb.Constraints(false, false, false, true, false, true); // Set constraints
-        bot.speed = 5;
-
-        bot.transform.localScale = Vector3.one * 0.9f;
+        obj.transform.localScale = Vector3.one * 0.9f;
         // bot.animationController.StopAllAnimation();
 
-        return bot;
+        return obj;
         //A.BusController.gameObject.GetComponent<PuzzleController>().CheckAllBotPaths();
     }
     public List<Color> botColors;

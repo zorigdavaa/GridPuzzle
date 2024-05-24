@@ -52,7 +52,7 @@ public class PuzzleSlotDoor : PuzzleSlot
                 Color = Colors[InsCount - 1];
                 InsCount--;
                 // GetComponent<GridNode>().OwnGrid.InstantiateBot(Color, leftObj.GetComponent<PuzzleSlot>());
-                Bot insBot = GetComponent<GridNode>().OwnGrid.InstantiateBot(Color, this);
+                IGridObj insBot = GetComponent<GridNode>().OwnGrid.InstantiateBot(Color, this);
                 List<Vector3> pathf = new List<Vector3>() { transform.position, leftObj.transform.position };
                 insBot.GotoSlot(leftObj.GetComponent<GridNode>(), pathf);
                 // A.BusController.GetComponent<PuzzleController>().CheckAllBotPaths();

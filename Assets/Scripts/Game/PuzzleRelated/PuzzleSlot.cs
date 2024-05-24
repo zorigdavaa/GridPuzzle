@@ -8,23 +8,23 @@ public class PuzzleSlot : MonoBehaviour
 {
     // public PuzzleSlot gridPos;
     // Grid<PuzzleSlot> grid;
-    public Bot Bot;
+    public IGridObj Bot;
     public bool isChosenSlot = false;
     public bool isColorHidden = false;
     public Color Color = Color.black;
 
     public GridNode GridNode;
     public EventHandler OnBotNull;
-    internal Bot GetBot()
+    internal IGridObj GetBot()
     {
         return Bot;
     }
 
-    internal virtual void SetBot(Bot bot, bool instantPlacement = true)
+    internal virtual void SetBot(IGridObj bot, bool instantPlacement = true)
     {
 
         Bot = bot;
-        if (bot)
+        if (bot != null)
         {
             Bot.currentSlot = this;
             if (instantPlacement)

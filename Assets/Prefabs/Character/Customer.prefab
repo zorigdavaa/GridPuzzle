@@ -398,8 +398,9 @@ GameObject:
   - component: {fileID: 8871509487102450673}
   - component: {fileID: 8871509487102450675}
   - component: {fileID: 8871509487102450677}
+  - component: {fileID: 4531002024021499440}
   m_Layer: 6
-  m_Name: Character
+  m_Name: Customer
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -474,6 +475,35 @@ CapsuleCollider:
   m_Height: 1.5
   m_Direction: 1
   m_Center: {x: 0, y: 0.75, z: 0}
+--- !u!114 &4531002024021499440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8871509487102450672}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7687fb0fe378a4341810e2f451106507, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mp: {x: 0, y: 0, z: 0}
+  movement: {fileID: 0}
+  data:
+    name: 
+    score: 0
+    score2: 0
+    isPlayer: 0
+    isLive: 0
+    col: {r: 0, g: 0, b: 0, a: 0}
+  animationController: {fileID: 0}
+  inventory: {fileID: 0}
+  rend: {fileID: 0}
+  healthBar: {fileID: 0}
+  speed: 5
+  currentSlot: {fileID: 0}
+  paths: []
+  Orders: []
 --- !u!1 &8871509487369339862
 GameObject:
   m_ObjectHideFlags: 0

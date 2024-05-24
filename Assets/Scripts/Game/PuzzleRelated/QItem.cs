@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class QItem : MonoBehaviour, IColored
+public class QItem : MonoBehaviour, IQItem
 {
-    Renderer rend;
+    public Renderer rend;
 
     // Start is called before the first frame update
     void Start()
@@ -25,5 +25,10 @@ public class QItem : MonoBehaviour, IColored
     public void SetColor(Color color)
     {
         rend.material.color = color;
+    }
+
+    public void GoToQPos(Que Q)
+    {
+        throw new System.NotImplementedException();
     }
 }
