@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Ingredient : MonoBehaviour, IGridObj
+public class Ingredient : MonoBehaviour, IPuzzleObj
 {
     public IngredientType Type;
     public Sprite icon;

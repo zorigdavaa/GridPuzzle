@@ -21,8 +21,8 @@ public class PuzzleSlotDoor : PuzzleSlot
     }
 
     public int DefaultInsCount = 3;
-    [SerializeField] List<Color> Colors;
-
+    [SerializeField] List<IPuzzleObj> InsObjs;
+    IPuzzleObj Obj;
     public TextMeshPro uiCounter;
 
     // Start is called before the first frame update
@@ -34,10 +34,6 @@ public class PuzzleSlotDoor : PuzzleSlot
         leftObj.OnBotNull += OnLeftBotNull;
 
     }
-    public void SetColors(Color color, int index)
-    {
-        Colors[index] = color;
-    }
 
 
     private void OnLeftBotNull(object sender, EventArgs e)
@@ -47,12 +43,12 @@ public class PuzzleSlotDoor : PuzzleSlot
         IEnumerator LocalCoroutine()
         {
             yield return new WaitForSeconds(0.5f);
-            if (InsCount > 0 && leftObj.GetBot() == null)
+            if (InsCount > 0 && leftObj.GetPuzzleObj() == null)
             {
-                Color = Colors[InsCount - 1];
+                Obj = InsObjs[InsCount - 1];
                 InsCount--;
                 // GetComponent<GridNode>().OwnGrid.InstantiateBot(Color, leftObj.GetComponent<PuzzleSlot>());
-                IGridObj insBot = GetComponent<GridNode>().OwnGrid.InstantiateBot(Color, this);
+                IPuzzleObj insBot = FindObjectOfType<PuzzleController>().InsPuzzleObj(this, Obj.gameObject);
                 List<Vector3> pathf = new List<Vector3>() { transform.position, leftObj.transform.position };
                 insBot.GotoSlot(leftObj.GetComponent<GridNode>(), pathf);
                 // A.BusController.GetComponent<PuzzleController>().CheckAllBotPaths();

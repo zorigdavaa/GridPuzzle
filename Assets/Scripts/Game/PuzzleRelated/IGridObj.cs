@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public interface IGridObj : IColored, IPathFollower
+public interface IPuzzleObj : IColored, IPathFollower
 {
     public Transform transform { get; }
     public GameObject gameObject { get; }

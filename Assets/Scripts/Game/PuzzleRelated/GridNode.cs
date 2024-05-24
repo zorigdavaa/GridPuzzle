@@ -12,9 +12,9 @@ public class GridNode : MonoBehaviour
     public int HCost { get; set; }
     public int FCost { get { return GCost + HCost; } }
     public Vector3 Position { get { return new Vector3(X, 0, Y); } }
-    public bool IsTraversable { get { return GetComponent<PuzzleSlot>().GetBot() == null && !Blocked; } } // You may need to implement this depending on your grid setup
+    public bool IsTraversable { get { return GetComponent<PuzzleSlot>().GetPuzzleObj() == null && !Blocked; } } // You may need to implement this depending on your grid setup
 
-    public Grid OwnGrid { get; internal set; }
+    public GridMono OwnGrid { get; internal set; }
 
     public PuzzleSlot Slot;
     public Vector3 Offset;

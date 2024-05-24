@@ -6,21 +6,27 @@ using ZPackage;
 
 public class PuzzleSlot : MonoBehaviour
 {
-    // public PuzzleSlot gridPos;
-    // Grid<PuzzleSlot> grid;
-    public IGridObj Bot;
+    public IPuzzleObj Bot;
     public bool isChosenSlot = false;
-    public bool isColorHidden = false;
-    public Color Color = Color.black;
-
-    public GridNode GridNode;
+    public GridNode _gridNode;
+    public GridNode GridNode
+    {
+        get
+        {
+            if (_gridNode == null)
+            {
+                _gridNode = GetComponent<GridNode>();
+            }
+            return _gridNode;
+        }
+    }
     public EventHandler OnBotNull;
-    internal IGridObj GetBot()
+    internal IPuzzleObj GetPuzzleObj()
     {
         return Bot;
     }
 
-    internal virtual void SetBot(IGridObj bot, bool instantPlacement = true)
+    internal virtual void SetBot(IPuzzleObj bot, bool instantPlacement = true)
     {
 
         Bot = bot;
@@ -67,13 +73,6 @@ public class PuzzleSlot : MonoBehaviour
     //     // }
     // }
 
-
-
-
-    internal Color GetColor()
-    {
-        return Color;
-    }
     public virtual void Init()
     {
 

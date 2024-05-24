@@ -5,31 +5,58 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using ZPackage;
+using ZPackage.Helper;
+using Random = UnityEngine.Random;
 
 public class PuzzleController : Mb
 {
     Camera cam;
     Ray ray;
-    int layermask;
-    int roadMask;
-    PuzzleSlot lastSlot;
-    // Bot selectedObj;
-    List<PuzzleSlot> chosenSlots;
-    List<PuzzleSlot> Slots;
+    List<PuzzleSlot> chosenSlots = new List<PuzzleSlot>();
+    public List<PuzzleSlot> Slots;
     public bool isPuzzling = false;
-    public LineRenderer line;
-    public Bot botPf;
-    public Grid grid;
+    public GridMono grid;
     QueueManager queueManager;
+    Dictionary<PuzzleSlot, IPuzzleObj> PuzzleObjDic = new Dictionary<PuzzleSlot, IPuzzleObj>();
     // Start is called before the first frame update
     void Start()
     {
-        line = GetComponent<LineRenderer>();
         cam = FindObjectOfType<Camera>();
-        layermask = LayerMask.GetMask("Bot");
-        roadMask = LayerMask.GetMask("Road");
         queueManager = FindObjectOfType<QueueManager>();
+        Init();
         GameManager.Instance.GamePlay += OnGamePlay;
+    }
+    // [ContextMenu("Placement")]
+    public void Init()
+    {
+        foreach (var item in Slots)
+        {
+            bool isChosen = item.GetComponent<GridNode>().Y == grid.GetHeight() - 1;
+            bool isHideSlot = item.GetComponent<GridNode>().Y == grid.GetHeight() - 2;
+            item.isChosenSlot = isChosen;
+            // Color color = isChosen ? Color.white : new Color32(202, 202, 202, 255);
+            if (isChosen)
+            {
+                chosenSlots.Add(item);
+                item.SetColor(Color.white);
+            }
+            else
+            {
+                item.SetColor(new Color32(202, 202, 202, 255));
+            }
+            if (isHideSlot)
+            {
+                item.gameObject.SetActive(false);
+                item.GetComponent<GridNode>().Blocked = false;
+            }
+            if (item.gameObject.activeSelf)
+            {
+                PuzzleObjDic.Add(item, null);
+            }
+        }
+        ShuffledSlots = Slots.Where(x => x.gameObject.activeSelf && !x.isChosenSlot).ToList();
+        ShuffledSlots.Shuffle();
+        RefillPuzzle();
     }
 
     private void OnGamePlay(object sender, EventArgs e)
@@ -37,7 +64,6 @@ public class PuzzleController : Mb
         StartPuzlle();
     }
 
-    // bool dragging;
 
     // Update is called once per frame
     void Update()
@@ -51,33 +77,33 @@ public class PuzzleController : Mb
             ray = cam.ScreenPointToRay(MP);
             // bool isHit = Physics.Raycast(ray, out RaycastHit hit, 20, layermask);
             bool isHit = Physics.Raycast(ray, out RaycastHit hit, 200);
-            IGridObj selectedObj = null;
+            IPuzzleObj selectedObj = null;
             if (isHit)
             {
-                if (hit.transform.GetComponent<IGridObj>() != null)
+                if (hit.transform.GetComponent<IPuzzleObj>() != null)
                 {
-                    selectedObj = hit.transform.GetComponent<IGridObj>();
+                    selectedObj = hit.transform.GetComponent<IPuzzleObj>();
                 }
-                else
-                {
-                    // print(hit.transform.gameObject.name);
-                    Collider[] aroundObjs = Physics.OverlapSphere(hit.point, 0.5f);
-                    // print(aroundObjs.Length);
-                    float minDistance = Mathf.Infinity;
-                    foreach (var obj in aroundObjs)
-                    {
-                        Bot bot = obj.transform.GetComponent<Bot>();
-                        if (bot != null)
-                        {
-                            float distance = Vector3.Distance(hit.point, bot.transform.position);
-                            if (distance < minDistance)
-                            {
-                                selectedObj = bot;
-                                minDistance = distance;
-                            }
-                        }
-                    }
-                }
+                // else// onoltiig oirhon onosonch saijruulna 
+                // {
+                //     // print(hit.transform.gameObject.name);
+                //     Collider[] aroundObjs = Physics.OverlapSphere(hit.point, 0.5f);
+                //     // print(aroundObjs.Length);
+                //     float minDistance = Mathf.Infinity;
+                //     foreach (var obj in aroundObjs)
+                //     {
+                //         Bot bot = obj.transform.GetComponent<Bot>();
+                //         if (bot != null)
+                //         {
+                //             float distance = Vector3.Distance(hit.point, bot.transform.position);
+                //             if (distance < minDistance)
+                //             {
+                //                 selectedObj = bot;
+                //                 minDistance = distance;
+                //             }
+                //         }
+                //     }
+                // }
             }
 
             print("Down and hit was " + isHit);
@@ -86,8 +112,7 @@ public class PuzzleController : Mb
             {
                 selectedObj.Clicked(this, EventArgs.Empty);
                 GridNode botNode = selectedObj.currentSlot.GridNode;
-                // PuzzleSlot goSlot = chosenSlots.Where(x => x.GetBot() == null).First();
-                List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetBot() == null && !x.GetComponent<GridNode>().Blocked).ToList();
+                List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetPuzzleObj() == null && !x.GetComponent<GridNode>().Blocked).ToList();
                 GridNode goNode = null;
                 if (FreeGoNodes.Count > 0)
                 {
@@ -95,13 +120,9 @@ public class PuzzleController : Mb
                 }
                 print(goNode + " go Nodes");
                 print(!selectedObj.currentSlot.isChosenSlot + " 2nd");
-                // if (goSlot && !selectedObj.currentSlot.isChosenSlot)
                 if (goNode != null && !selectedObj.currentSlot.isChosenSlot)
                 {
-                    // List<PuzzleSlot> freeSlots = GetFreeSlots();
-                    // List<Vector3> paths = FindPath(selectedObj.transform.position, goSlot.transform.position, freeSlots);
-                    // List<Vector3> paths = FindPath(selectedObj.currentSlot.GridNode, goNode);
-                    List<Vector3> paths = FindPath(botNode, goNode);
+                    List<Vector3> paths = grid.FindPath(botNode, goNode);
                     print("Path Count is  " + paths.Count);
                     // print(goNode.name + " Go Node");
                     if (paths.Count > 0)
@@ -111,12 +132,12 @@ public class PuzzleController : Mb
                         Action afterAction = () =>
                         {
                             selectedObj.ChosenState = true;
-                            List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetBot() == null && !x.GetComponent<GridNode>().Blocked).ToList();
+                            List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetPuzzleObj() == null && !x.GetComponent<GridNode>().Blocked).ToList();
                             if (FreeGoNodes.Count == 0)
                             {
                                 bool SameColor = false;
                                 List<Color> FirsColorsQ = queueManager.Queues.Select(x => x.GetFirst().GetColor()).ToList();
-                                List<Color> ChSlotColors = chosenSlots.Select(x => x.GetBot().GetColor()).ToList();
+                                List<Color> ChSlotColors = chosenSlots.Select(x => x.GetPuzzleObj().GetColor()).ToList();
                                 foreach (var item in ChSlotColors)
                                 {
                                     foreach (var QFirstColor in FirsColorsQ)
@@ -138,29 +159,9 @@ public class PuzzleController : Mb
                                 }
                             }
                         };
-                        // if (!chosenSlots.Any(x => x.GetBot() == null)) //when Full
-                        // selectedObj.TurnOnOutline(false);
-                        // print("Free Go Nodes are " + FreeGoNodes.Count);
                         if (FreeGoNodes.Count <= 2) //when Last
                         {
-                            // var commonColorPair = CalcColors(out List<Bot> FrequentColorBots);
-                            // // print("Ijil ongotei humuus " + commonColorPair.Value);
-                            // if (commonColorPair.Value > 1) // 2 baiwal ochihdoo 3 bolno
-                            // {
-                            //     // print("Jump Added " + commonColorPair.Value);
-                            //     // afterAction = () => Jump();
 
-                            // }
-                            // List<PuzzleSlot> FreeSlots = Slots.Where(x => !x.isChosenSlot && x.GetBot() != null && !x.GetComponent<GridNode>().Blocked).ToList();
-                            // if ((FreeGoNodes.Count == 1 && A.BusController.ManBusPos.HasFreeThreeSeat()) || FreeSlots.Count < 3)
-                            // if (FreeGoNodes.Count == 1)
-                            // {
-                            //     // print("Refesh added ");
-                            //     // print("1 condition " + (FreeGoNodes.Count == 1));
-                            //     // print("second - " + (FreeSlots.Count < 3) + " and Count is " + FreeSlots.Count);
-                            //     afterAction += () => { Refresh(); };
-                            //     // Refresh(commonColorPair.Value);
-                            // }
                         }
 
                         selectedObj.GotoSlot(goNode, paths, afterAction);
@@ -180,121 +181,35 @@ public class PuzzleController : Mb
     {
         if (Slots != null)
         {
-            // PuzzleSlot FreeGoNode = chosenSlots.Where(x => x.GetBot() == null).FirstOrDefault();
-            // if (FreeGoNode)
-            // {
             foreach (PuzzleSlot slot in Slots)
             {
-                IGridObj bot = slot.GetBot();
+                IPuzzleObj bot = slot.GetPuzzleObj();
                 if (bot != null && !bot.currentSlot.isChosenSlot)
                 {
                     GridNode botNode = bot.currentSlot.GridNode;
-                    List<Vector3> paths = FindPath(botNode, checkCanGoChosenNode);
+                    List<Vector3> paths = grid.FindPath(botNode, checkCanGoChosenNode);
                     // print(paths.Count + " Paths");
                     if (paths.Count > 0)
                     {
                         // bot.ShowIsClickable(true);
                     }
-                    // else
-                    // {
-                    //     //bot.ShowIsClickable(false);
-                    // }
+
                 }
             }
-            // }
         }
     }
 
-
-    private KeyValuePair<Color, int> CalcColors(out List<IGridObj> FrequentColorBots)
-    {
-
-        // chosenSlots = currentBusStop.Grid.GetChosenSlots();
-        Dictionary<Color, int> ColorFreq = new Dictionary<Color, int>();
-        foreach (var item in chosenSlots)
-        {
-            IGridObj bot = item.GetBot();
-            if (bot != null)
-            {
-                Color color = bot.GetColor();
-                if (ColorFreq.ContainsKey(color))
-                {
-                    ColorFreq[color]++;
-                }
-                else
-                {
-                    ColorFreq[color] = 1;
-                }
-            }
-
-        }
-
-        // print(ColorFreq.Count + "ijil ongo");
-        // print(chosenSlots.Count + " songoson slot");
-        var commonColorPair = ColorFreq.Where(x => x.Value == ColorFreq.Values.Max()).First();
-        // List<Bot> FrequentColorBots = chosenSlots.Where(x=>x.GetBot().GetColor() == commonColorPair.Key).ToList();
-        FrequentColorBots = chosenSlots.Select(x => x.GetBot()).Where(x => x?.GetColor() == commonColorPair.Key).ToList();
-        // print("Ijil ongotei humuus " + FrequentColorBots.Count);
-        // print("ColorFreq " + ColorFreq.Count);
-        if (ColorFreq.Count > 1)
-        {
-            print("ColorFreq " + ColorFreq.Keys.ToList()[0]);
-            print("ColorFreq " + ColorFreq.Keys.ToList()[1]);
-        }
-
-        return commonColorPair;
-    }
-    private KeyValuePair<Color, int> CalcColors(List<IGridObj> SeatchBots)
-    {
-        Dictionary<Color, int> ColorFreq = new Dictionary<Color, int>();
-        foreach (var item in SeatchBots)
-        {
-            Color color = item.GetColor();
-            if (ColorFreq.ContainsKey(color))
-            {
-                ColorFreq[color]++;
-            }
-            else
-            {
-                ColorFreq[color] = 1;
-            }
-        }
-
-        var commonColorPair = ColorFreq.Where(x => x.Value == ColorFreq.Values.Max()).First();
-        return commonColorPair;
-    }
 
 
     public void Refresh()
     {
-        List<PuzzleSlot> FreeSlots = Slots.Where(x => x.GetBot() != null && !x.isChosenSlot).ToList();
-        List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetBot() == null && !x.GetComponent<GridNode>().Blocked).ToList();
-        // print(FreeSlots.Count + " Count was");
-        // if (FreeGoNodes.Count == 1 || FreeSlots.Count < 3 || commonColorPair.Value < 3)
-        // print("3 seats was " + A.BusController.ManBusPos.HasFreeThreeSeat());
-        // if (!A.BusController.ManBusPos.HasFreeThreeSeat() && !isPuzzling)
-        print("Coubnt was " + FreeSlots.Count);
-        print("puzzling was  " + isPuzzling);
-        print(FreeGoNodes.Count == 1);
-        // if (isPuzzling && (FreeGoNodes.Count == 1 && !A.BusController.ManBusPos.HasFreeThreeSeat()) || FreeSlots.Count < 3)
+        List<PuzzleSlot> FreeSlots = Slots.Where(x => x.GetPuzzleObj() != null && !x.isChosenSlot).ToList();
+        List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetPuzzleObj() == null && !x.GetComponent<GridNode>().Blocked).ToList();
         if (isPuzzling && (FreeGoNodes.Count < 1 || FreeSlots.Count == 0))
-        // if (isPuzzling && FreeGoNodes.Count < 1)
         {
-            print(FreeSlots.Count < 3);
-            // print(commonColorPair.Key);
-            // print(commonColorCount);
-            print("Refershed  " + FreeGoNodes.Count);
-            // HardRefresh();
             StartCoroutine(LocalCoroutine());
             IEnumerator LocalCoroutine()
             {
-                // foreach (var item in Slots)
-                // {
-                //     if (item.GetBot() != null && item.GetBot().hiddenStatus.activeSelf)
-                //     {
-                //         item.GetBot().ShowIsClickable(true);
-                //     }
-                // }
                 yield return new WaitForSeconds(1);
                 HardRefresh();
             }
@@ -308,142 +223,15 @@ public class PuzzleController : Mb
     }
 
 
-
-    // private List<Vector3> FindPath(Vector3 startPos, Vector3 targetPos, List<PuzzleSlot> freeSlots)
-    public List<Vector3> FindPath(GridNode startPos, GridNode targetPos)
-    {
-        List<Vector3> path = new List<Vector3>();
-        // Create lists for open and closed nodes
-        List<GridNode> openList = new List<GridNode>();
-        HashSet<GridNode> closedSet = new HashSet<GridNode>();
-
-        // Add the start node to the open list
-        openList.Add(startPos);
-
-        // Start the A* algorithm
-        while (openList.Count > 0)
-        {
-            // Get the node with the lowest F cost from the open list
-            GridNode currentNode = openList[0];
-            for (int i = 1; i < openList.Count; i++)
-            {
-                if (openList[i].FCost < currentNode.FCost || (openList[i].FCost == currentNode.FCost && openList[i].HCost < currentNode.HCost))
-                {
-                    currentNode = openList[i];
-                }
-            }
-
-            // Remove the current node from the open list and add it to the closed set
-            openList.Remove(currentNode);
-            closedSet.Add(currentNode);
-
-            // Check if we've reached the target node
-            if (currentNode == targetPos)
-            {
-                // We've found the path, so retrace it and return
-                // path = RetracePath(currentNode, targetPos);
-                path = RetracePath(startPos, targetPos);
-                // print("Found " + path.Count);
-                return path;
-            }
-
-            // Get the neighboring nodes of the current node
-            List<GridNode> neighbors = grid.GetNeighbors(currentNode);
-            // Debug.Log(neighbors.Count + " Neighbors Count");
-            // Process each neighboring node
-            foreach (GridNode neighbor in neighbors)
-            {
-                // Skip this neighbor if it is not traversable or if it is in the closed set
-                if (closedSet.Contains(neighbor))
-                {
-                    continue;
-                }
-
-                // Calculate the new tentative G cost for this neighbor
-                int newGCost = currentNode.GCost + grid.GetDistance(currentNode, neighbor);
-
-                // If the new G cost is lower than the neighbor's current G cost or if the neighbor is not in the open list
-                if (newGCost < neighbor.GCost || !openList.Contains(neighbor))
-                {
-                    // Update the neighbor's G cost and H cost
-                    neighbor.GCost = newGCost;
-                    neighbor.HCost = grid.GetDistance(neighbor, targetPos);
-
-                    // Set the neighbor's parent to the current node
-                    neighbor.Parent = currentNode;
-
-                    // If the neighbor is not in the open list, add it
-                    if (!openList.Contains(neighbor))
-                    {
-                        openList.Add(neighbor);
-                    }
-                }
-            }
-        }
-
-        // print("Path not found");
-        // No path found, return an empty path
-        return path;
-    }
-
-    private List<Vector3> RetracePath(GridNode startNode, GridNode endNode)
-    {
-        List<Vector3> path = new List<Vector3>();
-        GridNode currentNode = endNode;
-        path.Add(grid.GetWorldPosition(currentNode.X, currentNode.Y));
-        while (currentNode != startNode)
-        {
-            // path.Add(currentNode.Position);
-            path.Add(grid.GetWorldPosition(currentNode.X, currentNode.Y));
-            // print(" Position was " + currentBusStop.Grid.GetWorldPosition(currentNode.X, currentNode.Y));
-            currentNode = currentNode.Parent;
-        }
-        path.Reverse();
-        return path;
-    }
-
-    private int GetDistance(GridNode nodeA, GridNode nodeB)
-    {
-        int distanceX = Mathf.Abs(nodeA.X - nodeB.X);
-        int distanceY = Mathf.Abs(nodeA.Y - nodeB.Y);
-
-        // Use Manhattan distance as the heuristic
-        return distanceX + distanceY;
-    }
-
-
-
-    // private List<PuzzleSlot> GetFreeSlots()
-    // {
-    //     // List<Vector3> paths = new List<Vector3>();
-    //     List<PuzzleSlot> FreeSlot = new List<PuzzleSlot>();
-    //     List<PuzzleSlot> AllSlot = Slots;
-    //     AllSlot.AddRange(chosenSlots);
-    //     // Vector3 CurrentPos = selectedBot.currentSlot.transform.position;
-    //     foreach (var item in AllSlot)
-    //     {
-    //         if (item.GetBot() == null)
-    //         {
-    //             FreeSlot.Add(item);
-    //         }
-    //     }
-    //     print(FreeSlot.Count + " Free slots");
-    //     return FreeSlot;
-    // }
-
-
     internal void StartPuzlle()
     {
-        // chosenSlots = stop.ChosenSlots;
-        // List<PuzzleSlot> AllSlots = grid.Slots;
-
-        chosenSlots = grid.GetChosenSlots();
-        Slots = grid.Slots;
+        // chosenSlots = grid.GetChosenSlots();
+        // Slots = grid.Slots;
         checkCanGoChosenNode = grid.GetHidedSecondGrid();
-        // chosenSlots = AllSlots.Where(x => x.isChosenSlot).ToList();
-        // Slots = AllSlots.Where(x => !x.isChosenSlot && !x.GetComponent<GridNode>().Blocked && x.gameObject.activeSelf).ToList();
         isPuzzling = true;
-        CheckAllBotPaths();
+
+        // CheckAllBotPaths();
+
     }
 
     internal void StopPuzzle()
@@ -456,17 +244,49 @@ public class PuzzleController : Mb
         // }
     }
 
-    internal List<IGridObj> GetClickAbleBots()
+    internal List<IPuzzleObj> GetClickAbleBots()
     {
-        List<IGridObj> SeatchBots = Slots.Where(x => x.GetBot() != null).Select(x => x.Bot).ToList();
-        var pair = CalcColors(SeatchBots);
+        List<IPuzzleObj> SeatchBots = Slots.Where(x => x.GetPuzzleObj() != null).Select(x => x.Bot).ToList();
         return Slots.Where(x =>
         !x.isChosenSlot &&
         x.gameObject.activeSelf &&
         !x.GetComponent<GridNode>().Blocked &&
-        x.GetBot() != null &&
-        x.GetBot()?.GetColor() == pair.Key).Select(x => x.Bot).ToList();
+        x.GetPuzzleObj() != null).Select(x => x.Bot).ToList();
     }
-    // Define a class to represent nodes in the grid for the A* algorithm
+    [SerializeField] GameObject[] BotPfs;
+    List<PuzzleSlot> ShuffledSlots;
+    internal void RefillPuzzle()
+    {
+
+        int index = 0;
+        // print(ShuffledSlots.Count + " Count is");
+        foreach (var item in ShuffledSlots)
+        {
+            if (item.GetPuzzleObj() != null)
+            {
+                Destroy(item.GetPuzzleObj().gameObject);
+            }
+            item.SetBot(null, true);
+            GridNode node = item.GetComponent<GridNode>();
+            if (item.GetPuzzleObj() == null && !item.isChosenSlot && !node.Blocked && item is not PuzzleSlotDoor)
+            {
+                InsPuzzleObj(item, BotPfs[Random.Range(0, BotPfs.Length)]);
+                index++;
+            }
+            item.Refresh();
+        }
+    }
+
+    public IPuzzleObj InsPuzzleObj(PuzzleSlot item, GameObject botPf)
+    {
+        // Quaternion rot = Quaternion.LookRotation(-transform.right);
+        Quaternion rot = Quaternion.identity;
+        IPuzzleObj obj = Instantiate(botPf, item.transform.position, rot, transform).GetComponent<IPuzzleObj>();
+        item.SetBot(obj);
+
+        obj.transform.localScale = Vector3.one * 0.9f;
+        return obj;
+    }
+
 }
 

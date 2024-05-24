@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class Bot : Character, IGridObj
+public class Bot : Character, IPuzzleObj
 {
     public Transform Target;
     [SerializeField] Transform Chest;
