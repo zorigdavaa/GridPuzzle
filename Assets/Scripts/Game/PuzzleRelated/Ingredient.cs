@@ -84,7 +84,7 @@ public class Ingredient : MonoBehaviour, IPuzzleObj
     public void GotoSlot(GridNode node, List<Vector3> paths, Action afterAction = null)
     {
         currentSlot = node.Slot;
-        GotoPath(paths);
+        GotoPath(paths, afterAction);
         node.GetComponent<PuzzleSlot>().SetBot(this, false);
     }
 
@@ -105,5 +105,5 @@ public class Ingredient : MonoBehaviour, IPuzzleObj
 }
 public enum IngredientType
 {
-    Meat, Bread, Lettuce, Cheese
+    Meat, Bread, Lettuce, Cheese, Tomato
 }

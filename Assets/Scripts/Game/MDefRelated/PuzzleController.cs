@@ -17,7 +17,6 @@ public class PuzzleController : Mb
     public bool isPuzzling = false;
     public GridMono grid;
     QueueManager queueManager;
-    Dictionary<PuzzleSlot, IPuzzleObj> PuzzleObjDic = new Dictionary<PuzzleSlot, IPuzzleObj>();
     // Start is called before the first frame update
     void Start()
     {
@@ -49,10 +48,6 @@ public class PuzzleController : Mb
                 item.gameObject.SetActive(false);
                 item.GetComponent<GridNode>().Blocked = false;
             }
-            if (item.gameObject.activeSelf)
-            {
-                PuzzleObjDic.Add(item, null);
-            }
         }
         ShuffledSlots = Slots.Where(x => x.gameObject.activeSelf && !x.isChosenSlot).ToList();
         ShuffledSlots.Shuffle();
@@ -64,7 +59,7 @@ public class PuzzleController : Mb
         StartPuzlle();
     }
 
-
+    List<PuzzleSlot> FreeGoNodes;
     // Update is called once per frame
     void Update()
     {
@@ -106,57 +101,62 @@ public class PuzzleController : Mb
                 // }
             }
 
-            print("Down and hit was " + isHit);
+            // print("Down and hit was " + isHit);
             if (selectedObj != null && selectedObj.currentSlot?.GridNode)
             // if (hitObjs.Length > 0 && selectedObj && selectedObj.currentSlot?.GridNode)
             {
                 selectedObj.Clicked(this, EventArgs.Empty);
                 GridNode botNode = selectedObj.currentSlot.GridNode;
-                List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetPuzzleObj() == null && !x.GetComponent<GridNode>().Blocked).ToList();
+                FreeGoNodes = chosenSlots.Where(x => x.GetPuzzleObj() == null && !x.GetComponent<GridNode>().Blocked).ToList();
                 GridNode goNode = null;
                 if (FreeGoNodes.Count > 0)
                 {
                     goNode = FreeGoNodes?.First().GridNode;
                 }
-                print(goNode + " go Nodes");
-                print(!selectedObj.currentSlot.isChosenSlot + " 2nd");
+                // print(goNode + " go Nodes");
+                // print(!selectedObj.currentSlot.isChosenSlot + " 2nd");
                 if (goNode != null && !selectedObj.currentSlot.isChosenSlot)
                 {
                     List<Vector3> paths = grid.FindPath(botNode, goNode);
-                    print("Path Count is  " + paths.Count);
+                    // print("Path Count is  " + paths.Count);
                     // print(goNode.name + " Go Node");
                     if (paths.Count > 0)
                     {
-                        print(paths.Count + " pathc");
+                        // print(paths.Count + " pathc");
                         selectedObj.currentSlot.SetBot(null);
                         Action afterAction = () =>
                         {
                             selectedObj.ChosenState = true;
-                            List<PuzzleSlot> FreeGoNodes = chosenSlots.Where(x => x.GetPuzzleObj() == null && !x.GetComponent<GridNode>().Blocked).ToList();
+                            FreeGoNodes = chosenSlots.Where(x => x.GetPuzzleObj() == null && !x.GetComponent<GridNode>().Blocked).ToList();
+                            Debug.Log(FreeGoNodes.Count);
                             if (FreeGoNodes.Count == 0)
                             {
-                                bool SameColor = false;
-                                List<Color> FirsColorsQ = queueManager.Queues.Select(x => x.GetFirst().GetColor()).ToList();
-                                List<Color> ChSlotColors = chosenSlots.Select(x => x.GetPuzzleObj().GetColor()).ToList();
-                                foreach (var item in ChSlotColors)
-                                {
-                                    foreach (var QFirstColor in FirsColorsQ)
-                                    {
-                                        if (item == QFirstColor)
-                                        {
-                                            SameColor = true;
-                                            break;
-                                        }
-                                    }
-                                    if (SameColor)
-                                    {
-                                        break;
-                                    }
-                                }
-                                if (!SameColor)
-                                {
-                                    Z.GM.GameOver(this, EventArgs.Empty);
-                                }
+                                // bool SameColor = false;
+                                // List<Color> FirsColorsQ = queueManager.Queues.Select(x => x.GetFirst().GetColor()).ToList();
+                                // List<Color> ChSlotColors = chosenSlots.Select(x => x.GetPuzzleObj().GetColor()).ToList();
+                                // foreach (var item in ChSlotColors)
+                                // {
+                                //     foreach (var QFirstColor in FirsColorsQ)
+                                //     {
+                                //         if (item == QFirstColor)
+                                //         {
+                                //             SameColor = true;
+                                //             break;
+                                //         }
+                                //     }
+                                //     if (SameColor)
+                                //     {
+                                //         break;
+                                //     }
+                                // }
+                                // if (!SameColor)
+                                // {
+                                // }
+                                Z.GM.GameOver(this, EventArgs.Empty);
+                            }
+                            else
+                            {
+                                Merge();
                             }
                         };
                         if (FreeGoNodes.Count <= 2) //when Last
@@ -173,6 +173,33 @@ public class PuzzleController : Mb
 
             CheckAllBotPaths();
         }
+    }
+
+    public void Merge()
+    {
+        List<Ingredient> ChosenIngs = new List<Ingredient>();
+        ChosenIngs = chosenSlots.Where(x => x.Bot != null).Select(x => (Ingredient)x.Bot).ToList();
+        // List<Ingredient> ToBeMergeobjs = new List<Ingredient>();
+        print("Count is " + ChosenIngs.Count);
+        if (ChosenIngs.Count > 1)
+        {
+            MergeManager Mergemanager = FindObjectOfType<MergeManager>();
+            for (int i = 1; i < ChosenIngs.Count; i++)
+            {
+                Ingredient a = ChosenIngs[i];
+                Ingredient b = ChosenIngs[i - 1];
+                print("MergeAble is " + Mergemanager.IsMergeAble(a, b));
+                if (Mergemanager.IsMergeAble(a, b))
+                {
+                    // ToBeMergeobjs.Add(a);
+                    // ToBeMergeobjs.Add(b);
+                    Mergemanager.Merge(a, b);
+                    break;
+                }
+            }
+        }
+
+
     }
 
     GridNode checkCanGoChosenNode;
@@ -270,12 +297,14 @@ public class PuzzleController : Mb
             GridNode node = item.GetComponent<GridNode>();
             if (item.GetPuzzleObj() == null && !item.isChosenSlot && !node.Blocked && item is not PuzzleSlotDoor)
             {
-                InsPuzzleObj(item, BotPfs[Random.Range(0, BotPfs.Length)]);
+                IPuzzleObj obj = InsPuzzleObj(item, BotPfs[Random.Range(0, BotPfs.Length)]);
                 index++;
             }
             item.Refresh();
         }
     }
+
+
 
     public IPuzzleObj InsPuzzleObj(PuzzleSlot item, GameObject botPf)
     {
