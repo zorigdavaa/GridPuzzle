@@ -89,6 +89,7 @@ public class Customer : Character, IQItem, IPathFollower
 
     internal void ShowBubble()
     {
+        Bubble.transform.parent.parent.gameObject.SetActive(true);
         Bubble.sprite = Orders[0].Image;
     }
 }

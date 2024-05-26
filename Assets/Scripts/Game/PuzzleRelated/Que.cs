@@ -141,6 +141,7 @@ public class Que : MonoBehaviour
             ProductImagine Imaginary = products[Random.Range(0, products.Count)].GetRandomImage();
             Customer cust = (Customer)item;
             cust.Orders.Add(Imaginary);
+            cust.ShowBubble();
         }
     }
 }
