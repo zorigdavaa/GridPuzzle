@@ -46,7 +46,7 @@ public class Que : MonoBehaviour
     private void Instantiate()
     {
         GameObject pf = Pfs[Random.Range(0, Pfs.Count)];
-        IQItem obj = Instantiate(pf, transform.position, Quaternion.identity, transform).GetComponent<IQItem>();
+        IQItem obj = Instantiate(pf, transform.position, transform.rotation, transform).GetComponent<IQItem>();
         Enque(obj);
     }
 
@@ -132,5 +132,15 @@ public class Que : MonoBehaviour
         //         yield return null;
         //     }
         // }
+    }
+
+    internal void SetOrder(List<Product> products)
+    {
+        foreach (var item in Q)
+        {
+            ProductImagine Imaginary = products[Random.Range(0, products.Count)].GetRandomImage();
+            Customer cust = (Customer)item;
+            cust.Orders.Add(Imaginary);
+        }
     }
 }

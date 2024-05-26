@@ -2,20 +2,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Customer : Character, IQItem, IPathFollower
 {
     public PuzzleSlot currentSlot;
     public List<Vector3> Paths { get; set; }
     public int CurrentPathIndex { get; set; } = 0;
-    public List<Product> Orders = new List<Product>();
+    public List<ProductImagine> Orders = new List<ProductImagine>();
+    public Image Bubble;
     // Start is called before the first frame update
     void Start()
     {
 
     }
 
-    IQItem PickItem;
     void Update()
     {
         if (HasPath())
@@ -84,5 +85,10 @@ public class Customer : Character, IQItem, IPathFollower
     public bool HasPath()
     {
         return Paths != null && Paths.Count > 0 && CurrentPathIndex < Paths.Count;
+    }
+
+    internal void ShowBubble()
+    {
+        Bubble.sprite = Orders[0].Image;
     }
 }

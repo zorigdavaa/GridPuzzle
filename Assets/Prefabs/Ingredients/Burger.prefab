@@ -66,11 +66,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -1169392204389863341, guid: e7de3efe648f91a4882e38e39f73b612, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -968373694728663679, guid: e7de3efe648f91a4882e38e39f73b612, type: 3}
       propertyPath: m_IsActive
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -274554135528823396, guid: e7de3efe648f91a4882e38e39f73b612, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -249,9 +249,14 @@ MonoBehaviour:
   - {fileID: 6423510897439970264}
   - {fileID: 910804584680037403}
   - {fileID: 5752612856723502235}
-  icon: {fileID: 0}
   speed: 5
   rend: {fileID: 0}
+  Imagines:
+  - {fileID: 11400000, guid: 88269d87cd4d6644db434393a6f36eb0, type: 2}
+  - {fileID: 11400000, guid: b31b1f369f51aa74b9496a8d17a06aed, type: 2}
+  - {fileID: 11400000, guid: d087a0d08a390ad499a8bd446af6f2e7, type: 2}
+  - {fileID: 11400000, guid: 6884adf3a02840545bc4d7d451bab707, type: 2}
+  - {fileID: 11400000, guid: 8b03f915d50548e4da3d2b4f08b154c6, type: 2}
 --- !u!1 &8848874865568052124 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 168378438785174179, guid: e7de3efe648f91a4882e38e39f73b612, type: 3}

@@ -175,32 +175,41 @@ public class PuzzleController : Mb
         }
     }
 
-    public void Merge()
+    public bool Merge()
     {
-        List<Ingredient> ChosenIngs = new List<Ingredient>();
-        ChosenIngs = chosenSlots.Where(x => x.Bot != null).Select(x => (Ingredient)x.Bot).ToList();
+        List<IMergeAble> ChosenIngs = new List<IMergeAble>();
+        ChosenIngs = chosenSlots.Where(x => x.Bot != null).Select(x => (IMergeAble)x.Bot).ToList();
         // List<Ingredient> ToBeMergeobjs = new List<Ingredient>();
         print("Count is " + ChosenIngs.Count);
         if (ChosenIngs.Count > 1)
         {
             MergeManager Mergemanager = FindObjectOfType<MergeManager>();
-            for (int i = 1; i < ChosenIngs.Count; i++)
+            for (int i = 0; i < ChosenIngs.Count; i++)
             {
-                Ingredient a = ChosenIngs[i];
-                Ingredient b = ChosenIngs[i - 1];
-                print("MergeAble is " + Mergemanager.IsMergeAble(a, b));
-                if (Mergemanager.IsMergeAble(a, b))
+                for (int j = i + 1; j < ChosenIngs.Count; j++)
                 {
-                    // ToBeMergeobjs.Add(a);
-                    // ToBeMergeobjs.Add(b);
-                    Mergemanager.Merge(a, b);
-                    break;
+                    // if (i == j)
+                    // {
+                    //     continue;
+                    // }
+                    IMergeAble a = ChosenIngs[i];
+                    IMergeAble b = ChosenIngs[j];
+                    // print("MergeAble is " + Mergemanager.IsMergeAble(a, b));
+                    if (Mergemanager.IsMergeAble(a, b))
+                    {
+                        // ToBeMergeobjs.Add(a);
+                        // ToBeMergeobjs.Add(b);
+                        Mergemanager.Merge(a, b);
+                        return true;
+                        // break;
+                    }
                 }
+
             }
         }
+        return false;
 
-
-    }
+    }//[0,1][0,2][0,3][1,0][1,2][1,3][2,0] etc
 
     GridNode checkCanGoChosenNode;
     //

@@ -2,12 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
-public class Product : MonoBehaviour, IPuzzleObj
+public class Product : MonoBehaviour, IPuzzleObj, IMergeAble
 {
     public ProductType Type;
     public List<Ingredient> Ingredients;
-    public Sprite icon;
     public int CurrentPathIndex { get; set; } = 0;
     public List<Vector3> Paths { get; set; }
     public Action OnPathComplete { get; set; }
@@ -79,7 +79,15 @@ public class Product : MonoBehaviour, IPuzzleObj
         Ingredients.Add(b);
         ArrangeIngredients();
     }
+    [SerializeField] List<ProductImagine> Imagines;
+    internal ProductImagine GetRandomImage()
+    {
+        return Imagines[Random.Range(0, Imagines.Count)];
+    }
 }
+
+
+
 public enum ProductType
 {
     Burger, Sabdwich
