@@ -5721,6 +5721,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Short StickMan Rig
       objectReference: {fileID: 0}
+    - target: {fileID: 4908090688128509756, guid: 09bc67ddfc69f0948b517ab0d83dbce0, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: b4410c84776ae8b478a1fd1d5833c913, type: 2}
     - target: {fileID: 5866666021909216657, guid: 09bc67ddfc69f0948b517ab0d83dbce0, type: 3}
       propertyPath: m_Controller
       value: 

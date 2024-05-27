@@ -62,6 +62,8 @@ public class MergeManager : MonoBehaviour
                     // newProduct.Type = recipe.Key;
                     // newProduct.Ingredients = new List<Ingredient> { a, b };
                     // return newProduct;
+                    InsProd.ActiveIngredients.Add(First);
+                    InsProd.ActiveIngredients.Add(Second);
                     First.gameObject.SetActive(true);
                     Second.gameObject.SetActive(true);
                     PuzzleSlot Aslot = ingA.currentSlot;
@@ -89,9 +91,11 @@ public class MergeManager : MonoBehaviour
     public void Merge(Product a, Ingredient b)
     {
         Ingredient sameIng = a.Ingredients.Where(x => x.Type == b.Type).FirstOrDefault();
-        if (!sameIng.gameObject.activeSelf)
+        // if (!sameIng.gameObject.activeSelf)
+        if (!a.ActiveIngredients.Contains(sameIng))
         {
             sameIng.gameObject.SetActive(true);
+            a.ActiveIngredients.Add(sameIng);
             PuzzleSlot slot = b.currentSlot;
             slot.SetBot(null);
             Destroy(b.gameObject);

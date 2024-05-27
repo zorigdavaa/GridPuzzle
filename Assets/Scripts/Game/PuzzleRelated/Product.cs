@@ -8,6 +8,7 @@ public class Product : MonoBehaviour, IPuzzleObj, IMergeAble
 {
     public ProductType Type;
     public List<Ingredient> Ingredients;
+    public List<Ingredient> ActiveIngredients;
     public int CurrentPathIndex { get; set; } = 0;
     public List<Vector3> Paths { get; set; }
     public Action OnPathComplete { get; set; }

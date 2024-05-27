@@ -1,8 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using Random = UnityEngine.Random;
 
 public class Que : MonoBehaviour
 {
@@ -12,6 +15,7 @@ public class Que : MonoBehaviour
     [SerializeField] int Count = 10;
     // public List<Color> Colors;
     float qOffset = 1;
+    public EventHandler OnDeque;
     // Start is called before the first frame update
     void Start()
     {
@@ -24,6 +28,23 @@ public class Que : MonoBehaviour
         {
             Instantiate();
         }
+        Customer cust = GetFirst().gameObject.GetComponent<Customer>();
+        cust.FirstInline = true;
+        cust.OnOrderComplete += (object a, EventArgs e) =>
+        {
+            Deque();
+        };
+        OnDeque += OnDequeHandler;
+    }
+
+    private void OnDequeHandler(object sender, EventArgs e)
+    {
+        Customer cust = GetFirst().gameObject.GetComponent<Customer>();
+        cust.FirstInline = true;
+        cust.OnOrderComplete += (object a, EventArgs e) =>
+        {
+            Deque();
+        };
     }
 
     // Update is called once per frame
@@ -84,6 +105,7 @@ public class Que : MonoBehaviour
             QPos[Q[i]] += transform.forward * qOffset;
         }
         RePosition();
+        OnDeque?.Invoke(this, EventArgs.Empty);
         return obj;
     }
     public IQItem GetFirst()

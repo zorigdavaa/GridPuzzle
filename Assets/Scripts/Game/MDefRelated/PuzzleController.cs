@@ -326,5 +326,9 @@ public class PuzzleController : Mb
         return obj;
     }
 
+    internal List<PuzzleSlot> GetChosenSlots()
+    {
+        return chosenSlots.Where(x => x.gameObject.activeSelf).ToList();
+    }
 }
 
