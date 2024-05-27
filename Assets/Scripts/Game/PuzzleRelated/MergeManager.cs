@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,10 @@ public class MergeManager : MonoBehaviour
     {
         if (a is Ingredient ingA && b is Ingredient IngB)
         {
+            if (ingA.Type == IngB.Type)
+            {
+                return false;
+            }
             foreach (var prod in Products)
             {
                 if (prod.Ingredients.Any(x => x.Type == ingA.Type) && prod.Ingredients.Any(x => x.Type == IngB.Type))
@@ -47,7 +52,7 @@ public class MergeManager : MonoBehaviour
         return false;
     }
 
-    public Product Merge(IMergeAble a, IMergeAble b)
+    public void Merge(IMergeAble a, IMergeAble b)
     {
         if (a is Ingredient ingA && b is Ingredient IngB)
         {
@@ -55,25 +60,27 @@ public class MergeManager : MonoBehaviour
             {
                 if (recipe.Ingredients.Any(x => x.Type == ingA.Type) && recipe.Ingredients.Any(x => x.Type == IngB.Type))
                 {
-                    Product InsProd = Instantiate(recipe, transform.position, Quaternion.identity);
-                    Ingredient First = InsProd.Ingredients.Where(x => x.Type == ingA.Type).First();
-                    Ingredient Second = InsProd.Ingredients.Where(x => x.Type == IngB.Type).First();
-                    // Product newProduct = new Product();
-                    // newProduct.Type = recipe.Key;
-                    // newProduct.Ingredients = new List<Ingredient> { a, b };
-                    // return newProduct;
-                    InsProd.ActiveIngredients.Add(First);
-                    InsProd.ActiveIngredients.Add(Second);
-                    First.gameObject.SetActive(true);
-                    Second.gameObject.SetActive(true);
-                    PuzzleSlot Aslot = ingA.currentSlot;
+
                     PuzzleSlot Bslot = IngB.currentSlot;
-                    Aslot.SetBot(InsProd);
                     Bslot.SetBot(null);
-                    Destroy(ingA.gameObject);
-                    Destroy(IngB.gameObject);
-                    puzzleController.Merge();
-                    return InsProd;
+                    StartCoroutine(MergingCor(ingA.transform, IngB.transform, () =>
+                    {
+                        Product InsProd = Instantiate(recipe, transform.position, Quaternion.identity);
+                        Ingredient First = InsProd.Ingredients.Where(x => x.Type == ingA.Type).First();
+                        Ingredient Second = InsProd.Ingredients.Where(x => x.Type == IngB.Type).First();
+                        InsProd.ActiveIngredients.Add(First);
+                        InsProd.ActiveIngredients.Add(Second);
+                        First.gameObject.SetActive(true);
+                        Second.gameObject.SetActive(true);
+                        PuzzleSlot Aslot = ingA.currentSlot;
+                        Aslot.SetBot(InsProd);
+
+                        Destroy(ingA.gameObject);
+                        Destroy(IngB.gameObject);
+                        puzzleController.Merge();
+
+                    }));
+                    // return InsProd;
                 }
             }
         }
@@ -86,20 +93,44 @@ public class MergeManager : MonoBehaviour
             Merge(ProdB, ingAA);
         }
 
-        return null;
+        // return null;
     }
+
+    private IEnumerator MergingCor(Transform A, Transform B, Action afterAction)
+    {
+        float time = 0;
+        float dur = 0.5f;
+        float t;
+        Vector3 initPos = B.transform.position;
+        Vector3 TargetPos = A.transform.position;
+        while (time < dur)
+        {
+            time += Time.deltaTime;
+            t = time / dur;
+            initPos.y += 4 * Time.deltaTime;
+            B.transform.position = Vector3.Lerp(initPos, TargetPos, t);
+            yield return null;
+        }
+        afterAction();
+
+    }
+
     public void Merge(Product a, Ingredient b)
     {
         Ingredient sameIng = a.Ingredients.Where(x => x.Type == b.Type).FirstOrDefault();
         // if (!sameIng.gameObject.activeSelf)
         if (!a.ActiveIngredients.Contains(sameIng))
         {
-            sameIng.gameObject.SetActive(true);
-            a.ActiveIngredients.Add(sameIng);
-            PuzzleSlot slot = b.currentSlot;
-            slot.SetBot(null);
-            Destroy(b.gameObject);
-            puzzleController.Merge();
+            StartCoroutine(MergingCor(a.transform, b.transform, () =>
+            {
+                sameIng.gameObject.SetActive(true);
+                a.ActiveIngredients.Add(sameIng);
+                PuzzleSlot slot = b.currentSlot;
+                slot.SetBot(null);
+                Destroy(b.gameObject);
+                puzzleController.Merge();
+
+            }));
         }
     }
 }

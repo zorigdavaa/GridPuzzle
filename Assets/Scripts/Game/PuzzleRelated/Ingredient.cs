@@ -36,7 +36,7 @@ public class Ingredient : MonoBehaviour, IPuzzleObj, IMergeAble
         Vector3 SameY = transform.position;
         SameY.y = currentTarget.y;
         float distance = Vector3.Distance(SameY, currentTarget);
-        if (distance < 0.1f)
+        if (distance < 0.2f)
         {
             CurrentPathIndex++;
             if (CurrentPathIndex >= Paths.Count)
