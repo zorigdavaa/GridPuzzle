@@ -34,7 +34,7 @@ public class PuzzleController : Mb
             bool isHideSlot = item.GetComponent<GridNode>().Y == grid.GetHeight() - 2;
             item.isChosenSlot = isChosen;
             // Color color = isChosen ? Color.white : new Color32(202, 202, 202, 255);
-            if (isChosen)
+            if (isChosen && item.gameObject.activeSelf)
             {
                 chosenSlots.Add(item);
                 item.SetColor(Color.white);
@@ -128,36 +128,7 @@ public class PuzzleController : Mb
                         {
                             selectedObj.ChosenState = true;
                             FreeGoNodes = chosenSlots.Where(x => x.GetPuzzleObj() == null && !x.GetComponent<GridNode>().Blocked).ToList();
-                            Debug.Log(FreeGoNodes.Count);
-                            if (FreeGoNodes.Count == 0)
-                            {
-                                // bool SameColor = false;
-                                // List<Color> FirsColorsQ = queueManager.Queues.Select(x => x.GetFirst().GetColor()).ToList();
-                                // List<Color> ChSlotColors = chosenSlots.Select(x => x.GetPuzzleObj().GetColor()).ToList();
-                                // foreach (var item in ChSlotColors)
-                                // {
-                                //     foreach (var QFirstColor in FirsColorsQ)
-                                //     {
-                                //         if (item == QFirstColor)
-                                //         {
-                                //             SameColor = true;
-                                //             break;
-                                //         }
-                                //     }
-                                //     if (SameColor)
-                                //     {
-                                //         break;
-                                //     }
-                                // }
-                                // if (!SameColor)
-                                // {
-                                // }
-                                Z.GM.GameOver(this, EventArgs.Empty);
-                            }
-                            else
-                            {
-                                Merge();
-                            }
+                            Merge();
                         };
                         if (FreeGoNodes.Count <= 2) //when Last
                         {
@@ -181,6 +152,7 @@ public class PuzzleController : Mb
         ChosenIngs = chosenSlots.Where(x => x.Bot != null).Select(x => (IMergeAble)x.Bot).ToList();
         // List<Ingredient> ToBeMergeobjs = new List<Ingredient>();
         print("Count is " + ChosenIngs.Count);
+        bool isMergeOccured = false;
         if (ChosenIngs.Count > 1)
         {
             MergeManager Mergemanager = FindObjectOfType<MergeManager>();
@@ -200,11 +172,16 @@ public class PuzzleController : Mb
                         // ToBeMergeobjs.Add(a);
                         // ToBeMergeobjs.Add(b);
                         Mergemanager.Merge(a, b);
+                        isMergeOccured = true;
                         return true;
                         // break;
                     }
                 }
 
+            }
+            if (!isMergeOccured && FreeGoNodes.Count == 0)
+            {
+                Z.GM.GameOver(this, EventArgs.Empty);
             }
         }
         return false;

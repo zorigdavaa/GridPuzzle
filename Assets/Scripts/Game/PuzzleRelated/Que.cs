@@ -21,30 +21,32 @@ public class Que : MonoBehaviour
     {
         // Init();
     }
-
+    Customer FirstCustomer;
     public void Init()
     {
         for (int i = 0; i < Count; i++)
         {
             Instantiate();
         }
-        Customer cust = GetFirst().gameObject.GetComponent<Customer>();
-        cust.FirstInline = true;
-        cust.OnOrderComplete += (object a, EventArgs e) =>
-        {
-            Deque();
-        };
+        FirstCustomer = GetFirst().gameObject.GetComponent<Customer>();
+        // cust.FirstInline = true;
+        FirstCustomer.SubScribeMerge();
+        FirstCustomer.OnOrderComplete += CustOrdCompHandler;
         OnDeque += OnDequeHandler;
     }
 
     private void OnDequeHandler(object sender, EventArgs e)
     {
-        Customer cust = GetFirst().gameObject.GetComponent<Customer>();
-        cust.FirstInline = true;
-        cust.OnOrderComplete += (object a, EventArgs e) =>
-        {
-            Deque();
-        };
+        FirstCustomer.OnOrderComplete -= CustOrdCompHandler;
+        FirstCustomer = GetFirst().gameObject.GetComponent<Customer>();
+        // cust.FirstInline = true;
+        FirstCustomer.SubScribeMerge();
+        FirstCustomer.OnOrderComplete += CustOrdCompHandler;
+    }
+
+    private void CustOrdCompHandler()
+    {
+        Deque();
     }
 
     // Update is called once per frame

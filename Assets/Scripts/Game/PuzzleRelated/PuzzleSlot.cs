@@ -7,6 +7,7 @@ using ZPackage;
 public class PuzzleSlot : MonoBehaviour
 {
     public IPuzzleObj Bot;
+    public GameObject BotDeb;
     public bool isChosenSlot = false;
     public GridNode _gridNode;
     public GridNode GridNode
@@ -30,6 +31,7 @@ public class PuzzleSlot : MonoBehaviour
     {
 
         Bot = bot;
+        BotDeb = bot != null ? bot.gameObject : null;
         if (bot != null)
         {
             Bot.currentSlot = this;

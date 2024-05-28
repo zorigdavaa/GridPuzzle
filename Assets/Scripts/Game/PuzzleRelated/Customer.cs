@@ -14,13 +14,52 @@ public class Customer : Character, IQItem, IPathFollower
     public Image Bubble;
     PuzzleController puzzleController;
     List<PuzzleSlot> ChosenSlots;
+    MergeManager mergeManager;
     // Start is called before the first frame update
     void Start()
     {
         puzzleController = FindObjectOfType<PuzzleController>();
         ChosenSlots = puzzleController.GetChosenSlots();
+
+        // SubScribeMerge();
     }
-    public EventHandler OnOrderComplete;
+
+    public void SubScribeMerge()
+    {
+        mergeManager = FindFirstObjectByType<MergeManager>();
+        mergeManager.Merged += OnMerged;
+    }
+
+    private void OnMerged(object sender, EventArgs e)
+    {
+        foreach (var item in ChosenSlots)
+        {
+            Product prod = item.GetPuzzleObj()?.gameObject.GetComponent<Product>();
+            if (prod && HasSameIngrediend(prod, Orders[0]))
+            {
+                prod.currentSlot.SetBot(null);
+                List<Vector3> path = new List<Vector3> { item.transform.position };
+                Action afterAction = () =>
+                {
+                    Debug.Log("First Complete");
+
+                    List<Vector3> paths = new List<Vector3> { prod.transform.position + Vector3.forward, transform.position + Vector3.right * 20 };
+                    prod.transform.SetParent(transform);
+                    prod.transform.position += Vector3.up * 1.5f;
+                    GoPath(paths, () =>
+                    {
+                        Destroy(gameObject);
+                    });
+                };
+                GoPath(path, afterAction);
+                FirstInline = false;
+                OnOrderComplete?.Invoke();
+                break;
+            }
+        }
+    }
+
+    public event Action OnOrderComplete;
     public bool FirstInline = false;
     void Update()
     {
@@ -28,35 +67,12 @@ public class Customer : Character, IQItem, IPathFollower
         {
             FollowPath();
         }
-        else if (FirstInline)
-        {
-            print("SSSS");
-            foreach (var item in ChosenSlots)
-            {
-                Product prod = item.GetPuzzleObj()?.gameObject.GetComponent<Product>();
-                if (prod && HasSameIngrediend(prod, Orders[0]))
-                {
-                    prod.currentSlot.SetBot(null);
-                    List<Vector3> path = new List<Vector3> { item.transform.position };
-                    Action afterAction = () =>
-                    {
-                        Debug.Log("First Complete");
-                        prod.transform.SetParent(transform);
-                        prod.transform.position += Vector3.up * 1.5f;
-                        List<Vector3> paths = new List<Vector3> { transform.position + Vector3.right * 20 };
-                        GoPath(paths, () =>
-                        {
-                            Destroy(gameObject);
-                        });
-                    };
-                    GoPath(path, afterAction);
-                    FirstInline = false;
-                    OnOrderComplete?.Invoke(this, EventArgs.Empty);
-                    break;
-                }
-            }
+        // else if (FirstInline)
+        // {
+        //     // print("SSSS");
 
-        }
+
+        // }
     }
 
     private bool HasSameIngrediend(Product prod, ProductImagine productImagine)

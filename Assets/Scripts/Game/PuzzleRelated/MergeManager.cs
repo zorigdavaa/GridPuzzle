@@ -8,6 +8,7 @@ public class MergeManager : MonoBehaviour
 {
     public List<Product> Products;
     PuzzleController puzzleController;
+    public EventHandler Merged;
     // Start is called before the first frame update
     void Start()
     {
@@ -77,7 +78,7 @@ public class MergeManager : MonoBehaviour
 
                         Destroy(ingA.gameObject);
                         Destroy(IngB.gameObject);
-                        puzzleController.Merge();
+                        // puzzleController.Merge();
 
                     }));
                     // return InsProd;
@@ -112,7 +113,7 @@ public class MergeManager : MonoBehaviour
             yield return null;
         }
         afterAction();
-
+        Merged?.Invoke(this, EventArgs.Empty);
     }
 
     public void Merge(Product a, Ingredient b)
@@ -128,7 +129,7 @@ public class MergeManager : MonoBehaviour
                 PuzzleSlot slot = b.currentSlot;
                 slot.SetBot(null);
                 Destroy(b.gameObject);
-                puzzleController.Merge();
+                // puzzleController.Merge();
 
             }));
         }
