@@ -97,7 +97,7 @@ public class Customer : Character, IQItem, IPathFollower
 
     public void Stop()
     {
-        rb.velocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
     }
     public Action OnPathComplete { get; set; }
     internal void GoPath(List<Vector3> paths, Action afterAction = null)

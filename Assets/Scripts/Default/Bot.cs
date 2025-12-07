@@ -143,7 +143,7 @@ public class Bot : Character, IPuzzleObj
     }
     public void Stop()
     {
-        rb.velocity = Vector3.zero;
+        rb.linearVelocity = Vector3.zero;
     }
 
     public void Clicked(object sender, EventArgs e)

@@ -99,11 +99,11 @@ namespace ZPackage.Helper
             var otherBody = collision.rigidbody;
             if (otherBody != null)
             {
-                otherVelocity = otherBody.velocity;
+                otherVelocity = otherBody.linearVelocity;
                 if (!otherBody.isKinematic)
                     otherVelocity += impulse / otherBody.mass;
             }
-            return body.velocity - impulse / body.mass;
+            return body.linearVelocity - impulse / body.mass;
         }
         public struct VelocityData
         {
@@ -121,26 +121,26 @@ namespace ZPackage.Helper
             if (force == 0 || velocity.magnitude == 0)
                 return;
 
-            velocity = velocity + velocity.normalized * 0.2f * rigidbody.drag;
+            velocity = velocity + velocity.normalized * 0.2f * rigidbody.linearDamping;
 
             //force = 1 => need 1 s to reach velocity (if mass is 1) => force can be max 1 / Time.fixedDeltaTime
             force = Mathf.Clamp(force, -rigidbody.mass / Time.fixedDeltaTime, rigidbody.mass / Time.fixedDeltaTime);
 
             //dot product is a projection from rhs to lhs with a length of result / lhs.magnitude https://www.youtube.com/watch?v=h0NJK4mEIJU
-            if (rigidbody.velocity.magnitude == 0)
+            if (rigidbody.linearVelocity.magnitude == 0)
             {
                 rigidbody.AddForce(velocity * force, mode);
             }
             else
             {
-                var velocityProjectedToTarget = (velocity.normalized * Vector3.Dot(velocity, rigidbody.velocity) / velocity.magnitude);
+                var velocityProjectedToTarget = (velocity.normalized * Vector3.Dot(velocity, rigidbody.linearVelocity) / velocity.magnitude);
                 rigidbody.AddForce((velocity - velocityProjectedToTarget) * force, mode);
             }
         }
 
         public static void ApplyTorqueToReachRPS(Rigidbody rigidbody, Quaternion rotation, float rps, float force = 1)
         {
-            var radPerSecond = rps * 2 * Mathf.PI + rigidbody.angularDrag * 20;
+            var radPerSecond = rps * 2 * Mathf.PI + rigidbody.angularDamping * 20;
 
             float angleInDegrees;
             Vector3 rotationAxis;

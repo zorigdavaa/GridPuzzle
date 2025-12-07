@@ -53,7 +53,7 @@ public abstract class Character : Mb, IHealth, IColored
         {
             // rb.velocity = dir * speed;
             rb.MovePosition(rb.position + dir * speed * Time.deltaTime);
-            rb.velocity += Vector3.down * 0.3f;
+            rb.linearVelocity += Vector3.down * 0.3f;
             transform.rotation = Quaternion.LookRotation(dir);
         }
     }
